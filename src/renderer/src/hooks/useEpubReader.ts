@@ -781,11 +781,16 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
     applyThemeToAllContents()
 
     // Force epub.js to re-layout after style change
-    if (renditionRef.current) {
-      renditionRef.current.resize(
-        viewerRef.current?.clientWidth ?? window.innerWidth,
-        viewerRef.current?.clientHeight ?? window.innerHeight
-      )
+    // Skip resize when scrollMode changed — initBook() handles full re-init
+    if (renditionRef.current && settings.scrollMode === prevScrollModeRef.current) {
+      try {
+        renditionRef.current.resize(
+          viewerRef.current?.clientWidth ?? window.innerWidth,
+          viewerRef.current?.clientHeight ?? window.innerHeight
+        )
+      } catch {
+        // Rendition manager not ready yet, safe to ignore
+      }
     }
   }, [settings, resolvedTheme, buildThemeCss, applyThemeToAllContents])
 
