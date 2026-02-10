@@ -66,7 +66,7 @@ function TrackCard({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-xl border border-border/50 bg-card/80 p-4.5 hover:bg-card hover:border-border hover:shadow-card-hover transition-all"
+      className="w-full text-left rounded-xl border border-border/50 bg-card/80 p-5 hover:bg-card hover:border-border hover:shadow-card-hover transition-all"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">

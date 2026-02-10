@@ -1,8 +1,8 @@
-# JustRead Architecture
+# FlareRead Architecture
 
 ## Overview
 
-JustRead is an Electron-based EPUB reader focused on deep reading with study sessions, progress tracking, and annotation management. Built with Electron + Vite + React + TypeScript.
+FlareRead is an Electron-based EPUB reader focused on deep reading with study sessions, progress tracking, and annotation management. Built with Electron + Vite + React + TypeScript.
 
 ## Tech Stack
 
@@ -327,6 +327,6 @@ Users can add manual time entries for reading done outside the app (e.g., physic
 
 ## Database Storage
 
-- **Database file**: `{userData}/justread.db`
+- **Database file**: `{userData}/flareread.db`
 - **Book files**: `{userData}/books/{bookId}.epub`
 - **Cover images**: `{userData}/covers/{bookId}.{ext}`

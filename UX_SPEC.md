@@ -1,4 +1,4 @@
-# JustRead UX Specification
+# FlareRead UX Specification
 
 ## Feature Flows
 

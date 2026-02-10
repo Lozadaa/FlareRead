@@ -55,7 +55,7 @@ export function Sidebar({ className, activePage = 'dashboard', onNavigate }: Sid
         {/* App branding */}
         <div className="px-5 pt-5 pb-3 shrink-0">
           <h1 className="font-display text-xl font-semibold italic tracking-tight text-sidebar-foreground">
-            <span className="text-sidebar-gold not-italic">J</span>ust<span className="text-sidebar-gold not-italic">R</span>ead
+            <span className="text-sidebar-gold not-italic">F</span>lare<span className="text-sidebar-gold not-italic">R</span>ead
           </h1>
           {/* Typographic ornament */}
           <div className="mt-2 flex items-center gap-2">
