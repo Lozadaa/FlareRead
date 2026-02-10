@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build output
+out/
+dist/
+
+# Database files
+*.db
+*.db-journal
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Agent runs (Dexteria task runner)
+agent-runs/
+
+# Local kanban board data
+.local-kanban/
+
+# Claude Code settings
+.claude/
+
+# Temp files
+nul

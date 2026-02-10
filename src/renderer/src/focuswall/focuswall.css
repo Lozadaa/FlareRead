@@ -1,0 +1,262 @@
+/* Focus Wall - Standalone styles (no Tailwind dependency for lightweight windows) */
+
+:root {
+  --fw-bg: #000000;
+  --fw-fg: #ffffff;
+  --fw-muted: rgba(255, 255, 255, 0.5);
+  --fw-accent: rgba(255, 255, 255, 0.15);
+  --fw-progress: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--fw-bg);
+  color: var(--fw-fg);
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+  user-select: none;
+  cursor: none;
+}
+
+/* ─── Shared Layout ─────────────────────────────────── */
+
+.fw-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.fw-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  max-width: 80%;
+}
+
+.fw-title {
+  font-size: 3rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.fw-author {
+  font-size: 1.25rem;
+  font-weight: 300;
+  opacity: 0.6;
+  margin-top: -0.5rem;
+}
+
+.fw-timer {
+  font-size: 5rem;
+  font-weight: 200;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
+}
+
+.fw-metric {
+  font-size: 1.125rem;
+  font-weight: 400;
+  opacity: 0.7;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.fw-paused {
+  font-size: 1.5rem;
+  font-weight: 300;
+  opacity: 0.5;
+  animation: fw-pulse 2s ease-in-out infinite;
+}
+
+/* ─── Circular Progress ─────────────────────────────── */
+
+.fw-progress-ring {
+  position: relative;
+  width: 240px;
+  height: 240px;
+}
+
+.fw-progress-ring svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.fw-progress-ring .track {
+  fill: none;
+  stroke: var(--fw-accent);
+  stroke-width: 3;
+}
+
+.fw-progress-ring .progress {
+  fill: none;
+  stroke: var(--fw-progress);
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.fw-progress-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+}
+
+.fw-progress-text {
+  font-size: 1rem;
+  font-weight: 400;
+  opacity: 0.5;
+}
+
+/* ─── Preset: Minimal ──────────────────────────────── */
+
+.preset-minimal {
+  --fw-bg: #0a0a0a;
+  --fw-fg: #f5f5f5;
+  --fw-muted: rgba(245, 245, 245, 0.4);
+  --fw-accent: rgba(245, 245, 245, 0.1);
+  --fw-progress: #f5f5f5;
+  background: var(--fw-bg);
+}
+
+/* ─── Preset: Gradient ─────────────────────────────── */
+
+.preset-gradient {
+  --fw-fg: #ffffff;
+  --fw-muted: rgba(255, 255, 255, 0.5);
+  --fw-accent: rgba(255, 255, 255, 0.15);
+  --fw-progress: #ffffff;
+  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background-size: 400% 400%;
+  animation: fw-gradient-shift 15s ease infinite;
+}
+
+@keyframes fw-gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ─── Preset: Monochrome ───────────────────────────── */
+
+.preset-monochrome {
+  --fw-bg: #000000;
+  --fw-fg: #ffffff;
+  --fw-muted: rgba(255, 255, 255, 0.35);
+  --fw-accent: rgba(255, 255, 255, 0.08);
+  --fw-progress: #ffffff;
+  background: #000000;
+}
+
+.preset-monochrome .fw-title {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 3.5rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.preset-monochrome .fw-author {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 1.375rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  font-style: normal;
+  opacity: 0.4;
+}
+
+.preset-monochrome .fw-timer {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-weight: 400;
+}
+
+/* ─── Preset: Illustration Progress ────────────────── */
+
+.preset-illustration {
+  --fw-bg: #0d1117;
+  --fw-fg: #e6edf3;
+  --fw-muted: rgba(230, 237, 243, 0.4);
+  --fw-accent: rgba(230, 237, 243, 0.1);
+  --fw-progress: #58a6ff;
+  background: #0d1117;
+}
+
+.fw-geo-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.fw-geo-svg {
+  width: 80%;
+  height: 80%;
+  opacity: 0.12;
+}
+
+.fw-geo-svg .geo-fill {
+  fill: var(--fw-progress);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.fw-geo-svg .geo-stroke {
+  fill: none;
+  stroke: var(--fw-accent);
+  stroke-width: 1;
+}
+
+/* ─── Animations ───────────────────────────────────── */
+
+@keyframes fw-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+}
+
+@keyframes fw-fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.fw-content > * {
+  animation: fw-fade-in 0.8s ease-out both;
+}
+
+.fw-content > *:nth-child(1) { animation-delay: 0.1s; }
+.fw-content > *:nth-child(2) { animation-delay: 0.2s; }
+.fw-content > *:nth-child(3) { animation-delay: 0.3s; }
+.fw-content > *:nth-child(4) { animation-delay: 0.4s; }
+.fw-content > *:nth-child(5) { animation-delay: 0.5s; }
+
+/* ─── Break State ──────────────────────────────────── */
+
+.fw-break-indicator {
+  font-size: 1.25rem;
+  font-weight: 300;
+  opacity: 0.6;
+  padding: 0.5rem 1.5rem;
+  border: 1px solid var(--fw-accent);
+  border-radius: 2rem;
+}
