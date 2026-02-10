@@ -78,28 +78,30 @@ export function MicrobreakReminder({
 
     return (
       <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[85] animate-in slide-in-from-top-4 fade-in duration-300">
-        <div className="bg-emerald-50 dark:bg-emerald-950/90 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-lg px-6 py-4 max-w-md">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/60 flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-600 dark:text-emerald-400">
+        <div className="bg-card/95 backdrop-blur-xl border border-primary/15 rounded-xl shadow-[0_8px_32px_-8px_hsla(var(--primary),0.12)] px-5 py-4 max-w-md">
+          <div className="flex items-center gap-3 mb-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, hsla(var(--primary), 0.1) 0%, hsla(var(--gold), 0.08) 100%)' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                 <path d="M17 8h1a4 4 0 1 1 0 8h-1" /><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z" /><line x1="6" x2="6" y1="2" y2="4" /><line x1="10" x2="10" y1="2" y2="4" /><line x1="14" x2="14" y1="2" y2="4" />
               </svg>
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
+            <div className="flex-1 min-w-0">
+              <p className="text-ui-sm font-medium text-foreground">
                 {message.title}
               </p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400">
+              <p className="text-ui-xs text-muted-foreground truncate">
                 {message.description}
               </p>
             </div>
-            <span className="text-sm font-mono tabular-nums text-emerald-600 dark:text-emerald-400">
+            <span className="text-ui-sm font-mono tabular-nums text-primary font-medium">
               {timeStr}
             </span>
           </div>
           <button
             onClick={handleEndBreak}
-            className="w-full mt-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+            className="w-full mt-1 px-3 py-1.5 text-ui-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 btn-press transition-colors duration-200"
           >
             Resume reading
           </button>
@@ -113,18 +115,18 @@ export function MicrobreakReminder({
 
   return (
     <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[85] animate-in slide-in-from-top-4 fade-in duration-300">
-      <div className="bg-amber-50 dark:bg-amber-950/90 border border-amber-200 dark:border-amber-800 rounded-xl shadow-lg px-6 py-4 max-w-md">
+      <div className="bg-card/95 backdrop-blur-xl border border-gold/20 rounded-xl shadow-[0_8px_32px_-8px_hsla(38,80%,55%,0.15)] px-5 py-4 max-w-md">
         <div className="flex items-center gap-3 mb-3">
-          <div className="w-8 h-8 rounded-full bg-amber-100 dark:bg-amber-900/60 flex items-center justify-center flex-shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-600 dark:text-amber-400">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-gold/10">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gold">
               <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
             </svg>
           </div>
-          <div className="flex-1">
-            <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+          <div className="flex-1 min-w-0">
+            <p className="text-ui-sm font-medium text-foreground">
               Time for a microbreak
             </p>
-            <p className="text-xs text-amber-600 dark:text-amber-400">
+            <p className="text-ui-xs text-muted-foreground truncate">
               {message.title} — {message.description.toLowerCase()}
             </p>
           </div>
@@ -133,19 +135,19 @@ export function MicrobreakReminder({
         <div className="flex items-center gap-2">
           <button
             onClick={handleTakeBreak}
-            className="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+            className="flex-1 px-3 py-1.5 text-ui-xs font-medium rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 btn-press transition-colors duration-200"
           >
             Take a break
           </button>
           <button
             onClick={onPostpone}
-            className="flex-1 px-3 py-1.5 text-xs font-medium rounded-lg border border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+            className="flex-1 px-3 py-1.5 text-ui-xs font-medium rounded-lg border border-border text-foreground hover:bg-accent hover:border-primary/20 btn-press transition-all duration-200"
           >
             +5 min
           </button>
           <button
             onClick={onDisableToday}
-            className="px-3 py-1.5 text-xs font-medium rounded-lg text-amber-500 dark:text-amber-500 hover:text-amber-700 dark:hover:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+            className="px-3 py-1.5 text-ui-xs font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent btn-press transition-all duration-200"
           >
             Disable today
           </button>

@@ -15,7 +15,7 @@ export function HighlightToolbar({ position, onHighlight, onDismiss }: Highlight
       <div className="fixed inset-0 z-[9998]" onClick={onDismiss} />
 
       <div
-        className="fixed z-[9999] flex items-center gap-1 px-2 py-1.5 bg-white rounded-lg shadow-lg border border-gray-200 animate-in fade-in zoom-in-95 duration-150"
+        className="fixed z-[9999] flex items-center gap-1.5 px-2.5 py-2 bg-popover/90 backdrop-blur-xl rounded-xl shadow-lg border border-border animate-in fade-in zoom-in-95 duration-150"
         style={{
           left: `${position.x}px`,
           top: `${position.y}px`,
@@ -26,7 +26,7 @@ export function HighlightToolbar({ position, onHighlight, onDismiss }: Highlight
           <button
             key={color.value}
             onClick={() => onHighlight(color.value)}
-            className="w-6 h-6 rounded-full border-2 border-transparent hover:border-gray-400 transition-all hover:scale-110"
+            className="w-6 h-6 rounded-full border-2 border-transparent hover:border-foreground/40 transition-all hover:scale-110 active:scale-95"
             style={{ backgroundColor: color.value }}
             title={`Highlight ${color.name}`}
             aria-label={`Highlight ${color.name}`}

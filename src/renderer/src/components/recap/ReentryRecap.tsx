@@ -92,7 +92,7 @@ export function ReentryRecap({
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-start gap-4">
               {/* Book cover */}
-              <div className="w-20 h-28 bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg flex items-center justify-center overflow-hidden shadow-md shrink-0">
+              <div className="w-20 h-28 bg-gradient-to-br from-primary/10 to-gold/10 rounded-xl flex items-center justify-center overflow-hidden shadow-lg shrink-0 border border-border/30">
                 {book.cover_path ? (
                   <img
                     src={fileUrl(book.cover_path!)}
@@ -100,7 +100,7 @@ export function ReentryRecap({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <BookOpen className="h-8 w-8 text-primary/40" />
+                  <BookOpen className="h-8 w-8 text-primary/30" />
                 )}
               </div>
               <div>
@@ -141,7 +141,7 @@ export function ReentryRecap({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3, delay: 0.05 }}
-          className="mb-6 p-4 rounded-xl bg-primary/5 border border-primary/10"
+          className="mb-6 p-4 rounded-xl bg-gradient-to-br from-primary/5 to-gold/5 border border-primary/10"
         >
           <div className="flex items-center gap-2 mb-1">
             <BookText className="w-4 h-4 text-primary" />
@@ -196,7 +196,7 @@ export function ReentryRecap({
               {data.highlights.map((highlight) => (
                 <div
                   key={highlight.id}
-                  className="p-3 rounded-lg border border-border bg-card"
+                  className="p-3.5 rounded-xl border border-border/40 bg-card/80"
                 >
                   <div className="flex items-start gap-2">
                     <div
@@ -236,7 +236,7 @@ export function ReentryRecap({
               {data.notes.map((note) => (
                 <div
                   key={note.id}
-                  className="p-3 rounded-lg border border-border bg-card"
+                  className="p-3.5 rounded-xl border border-border/40 bg-card/80"
                 >
                   <p className="text-sm text-foreground line-clamp-2">
                     {note.content}
@@ -293,10 +293,10 @@ function StatCard({
   bg: string
 }) {
   return (
-    <div className={`p-4 rounded-lg ${bg} text-center`}>
+    <div className={`p-4 rounded-xl border border-border/30 ${bg} text-center`}>
       <Icon className={`w-5 h-5 mx-auto mb-2 ${color}`} />
       <p className="text-xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground/70">{label}</p>
     </div>
   )
 }

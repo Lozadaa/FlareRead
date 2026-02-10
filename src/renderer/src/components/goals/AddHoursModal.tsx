@@ -77,13 +77,13 @@ export function AddHoursModal({
 
         <div className="space-y-4">
           {/* Mode toggle */}
-          <div className="flex rounded-lg border p-1 gap-1">
+          <div className="flex rounded-xl bg-muted/50 p-1 gap-1">
             <button
               onClick={() => setMode('add')}
               className={cn(
-                'flex-1 text-ui-sm py-1.5 rounded-md transition-colors text-center',
+                'flex-1 text-ui-sm py-2 rounded-lg transition-all text-center',
                 mode === 'add'
-                  ? 'bg-primary text-primary-foreground font-medium'
+                  ? 'bg-background text-foreground font-medium shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -93,9 +93,9 @@ export function AddHoursModal({
             <button
               onClick={() => setMode('correct')}
               className={cn(
-                'flex-1 text-ui-sm py-1.5 rounded-md transition-colors text-center',
+                'flex-1 text-ui-sm py-2 rounded-lg transition-all text-center',
                 mode === 'correct'
-                  ? 'bg-primary text-primary-foreground font-medium'
+                  ? 'bg-background text-foreground font-medium shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
@@ -152,16 +152,16 @@ export function AddHoursModal({
                   : 'Optional note about this entry...'
               }
               rows={2}
-              className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+              className="flex w-full rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all resize-none"
             />
           </div>
 
           {/* Preview */}
           {totalMinutes > 0 && (
-            <div className="rounded-lg bg-muted/50 p-3 text-ui-sm">
-              <span className="text-muted-foreground">New total: </span>
-              <span className="font-medium">{newTotal.toFixed(1)} hrs</span>
-              <span className="text-muted-foreground">
+            <div className="rounded-xl bg-primary/5 border border-primary/10 p-3.5 text-ui-sm">
+              <span className="text-muted-foreground/70">New total: </span>
+              <span className="font-semibold text-foreground">{newTotal.toFixed(1)} hrs</span>
+              <span className="text-muted-foreground/60">
                 {' '}(was {currentTotalHours.toFixed(1)} hrs)
               </span>
             </div>

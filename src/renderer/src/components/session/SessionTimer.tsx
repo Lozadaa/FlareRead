@@ -23,34 +23,38 @@ export function SessionTimer({ session, compact, onStop }: SessionTimerProps) {
     running: {
       icon: Timer,
       label: 'Focus',
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bg: 'bg-emerald-50 dark:bg-emerald-950/30',
-      border: 'border-emerald-200 dark:border-emerald-800',
-      dot: 'bg-emerald-500'
+      color: 'text-primary',
+      bg: 'bg-primary/[0.06]',
+      border: 'border-primary/20',
+      dot: 'bg-primary',
+      glow: 'shadow-[0_0_8px_1px_hsla(var(--primary),0.2)]'
     },
     paused_afk: {
       icon: AlertTriangle,
       label: 'AFK',
       color: 'text-amber-600 dark:text-amber-400',
-      bg: 'bg-amber-50 dark:bg-amber-950/30',
-      border: 'border-amber-200 dark:border-amber-800',
-      dot: 'bg-amber-500'
+      bg: 'bg-amber-500/[0.06]',
+      border: 'border-amber-500/20',
+      dot: 'bg-amber-500',
+      glow: 'shadow-[0_0_8px_1px_hsla(38,80%,55%,0.15)]'
     },
     break: {
       icon: Coffee,
       label: 'Break',
       color: 'text-blue-600 dark:text-blue-400',
-      bg: 'bg-blue-50 dark:bg-blue-950/30',
-      border: 'border-blue-200 dark:border-blue-800',
-      dot: 'bg-blue-500'
+      bg: 'bg-blue-500/[0.06]',
+      border: 'border-blue-500/20',
+      dot: 'bg-blue-500',
+      glow: ''
     },
     completed: {
       icon: Pause,
       label: 'Done',
-      color: 'text-gray-500 dark:text-gray-400',
-      bg: 'bg-gray-50 dark:bg-gray-900',
-      border: 'border-gray-200 dark:border-gray-700',
-      dot: 'bg-gray-400'
+      color: 'text-muted-foreground',
+      bg: 'bg-muted/50',
+      border: 'border-border',
+      dot: 'bg-muted-foreground',
+      glow: ''
     }
   }
 
@@ -66,23 +70,29 @@ export function SessionTimer({ session, compact, onStop }: SessionTimerProps) {
     return (
       <div
         className={cn(
-          'flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium border',
+          'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-ui-xs font-medium border',
+          'backdrop-blur-sm transition-all duration-300',
           config.bg,
           config.border,
-          config.color
+          config.color,
+          session.state === 'running' && config.glow
         )}
       >
-        <span className={cn('w-1.5 h-1.5 rounded-full animate-pulse', config.dot)} />
-        <span className="tabular-nums">{displayTime}</span>
+        <span className={cn(
+          'w-1.5 h-1.5 rounded-full',
+          config.dot,
+          session.state === 'running' && 'animate-pulse'
+        )} />
+        <span className="font-mono tabular-nums tracking-tight">{displayTime}</span>
         {session.pomodoroEnabled && (
-          <span className="text-[10px] opacity-70">
+          <span className="text-xs opacity-60 font-mono">
             P{session.completedPomodoros + 1}
           </span>
         )}
         {onStop && (
           <button
             onClick={onStop}
-            className="ml-1 opacity-60 hover:opacity-100 transition-opacity"
+            className="ml-0.5 opacity-50 hover:opacity-100 transition-opacity duration-200"
             title="End session"
           >
             <Pause className="w-3 h-3" />
@@ -95,29 +105,42 @@ export function SessionTimer({ session, compact, onStop }: SessionTimerProps) {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-2.5 rounded-lg border',
+        'flex items-center gap-3 px-4 py-3 rounded-xl border',
+        'backdrop-blur-sm transition-all duration-300',
         config.bg,
-        config.border
+        config.border,
+        session.state === 'running' && config.glow
       )}
     >
-      <Icon className={cn('w-5 h-5', config.color)} />
+      {/* Icon with subtle background */}
+      <div className={cn(
+        'w-9 h-9 rounded-lg flex items-center justify-center',
+        'bg-background/60 border border-border/30'
+      )}>
+        <Icon className={cn('w-4.5 h-4.5', config.color)} />
+      </div>
+
       <div className="flex flex-col">
-        <span className={cn('text-xs font-medium', config.color)}>{config.label}</span>
-        <span className={cn('text-lg font-semibold tabular-nums', config.color)}>
+        <span className={cn('text-ui-xs font-medium uppercase tracking-wider', config.color)}>
+          {config.label}
+        </span>
+        <span className={cn('text-lg font-mono font-semibold tabular-nums tracking-tight', config.color)}>
           {displayTime}
         </span>
       </div>
+
       {session.pomodoroEnabled && (
-        <div className="flex flex-col items-center ml-2 pl-2 border-l border-current/10">
-          <span className="text-[10px] text-muted-foreground">Pomodoro</span>
-          <span className={cn('text-sm font-medium', config.color)}>
+        <div className="flex flex-col items-center ml-2 pl-3 border-l border-border/40">
+          <span className="text-ui-xs text-muted-foreground">Pomodoro</span>
+          <span className={cn('text-ui-base font-mono font-semibold tabular-nums', config.color)}>
             #{session.completedPomodoros + (session.state === 'running' ? 1 : 0)}
           </span>
         </div>
       )}
-      <div className="flex flex-col items-center ml-2 pl-2 border-l border-current/10">
-        <span className="text-[10px] text-muted-foreground">Active</span>
-        <span className="text-sm font-medium text-foreground tabular-nums">
+
+      <div className="flex flex-col items-center ml-2 pl-3 border-l border-border/40">
+        <span className="text-ui-xs text-muted-foreground">Active</span>
+        <span className="text-ui-base font-mono font-medium text-foreground tabular-nums">
           {formatTime(session.timerSeconds)}
         </span>
       </div>

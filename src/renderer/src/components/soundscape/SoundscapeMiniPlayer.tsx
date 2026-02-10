@@ -96,14 +96,14 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
     <div
       className={cn(
         'fixed bottom-4 left-4 z-40',
-        'bg-card/95 backdrop-blur-lg border border-border rounded-xl shadow-xl',
+        'bg-popover/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.2)]',
         'transition-all duration-300 ease-out',
         isExpanded ? 'w-80' : 'w-auto'
       )}
     >
       {/* Expanded Panel */}
       {isExpanded && (
-        <div className="p-4 space-y-4 border-b border-border">
+        <div className="p-4 space-y-4 border-b border-border/40">
           {/* Header */}
           <div className="flex items-center justify-between">
             <h3 className="text-ui-sm font-semibold text-foreground">Soundscapes</h3>
@@ -123,8 +123,8 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
 
           {/* Profiles Panel */}
           {showProfiles && (
-            <div className="rounded-lg border border-border bg-muted/30 p-3 space-y-2">
-              <p className="text-ui-xs text-muted-foreground font-medium">Volume Profiles</p>
+            <div className="rounded-xl border border-border/40 bg-muted/20 p-3 space-y-2">
+              <p className="text-ui-xs text-muted-foreground/70 font-medium uppercase tracking-wider">Volume Profiles</p>
               <div className="space-y-1 max-h-36 overflow-y-auto">
                 {Object.entries(profiles).map(([key, profile]) => {
                   const isDefault = ['silent', 'rain_focus', 'cafe_study', 'deep_focus', 'cozy_reading', 'nature_escape'].includes(key)
@@ -132,10 +132,10 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
                     <div
                       key={key}
                       className={cn(
-                        'flex items-center justify-between px-2 py-1.5 rounded-md cursor-pointer transition-colors text-ui-xs',
+                        'flex items-center justify-between px-2.5 py-1.5 rounded-lg cursor-pointer transition-all text-ui-xs',
                         activeProfileName === key
-                          ? 'bg-primary/10 text-primary'
-                          : 'hover:bg-muted text-foreground'
+                          ? 'bg-primary/8 text-primary'
+                          : 'hover:bg-muted/30 text-foreground'
                       )}
                       onClick={() => applyProfile(key)}
                     >
@@ -258,7 +258,7 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
           </div>
 
           {/* Master volume */}
-          <div className="pt-2 border-t border-border">
+          <div className="pt-2 border-t border-border/40">
             <div className="flex items-center gap-2">
               <span className="text-ui-xs text-muted-foreground font-medium w-14">Master</span>
               <input

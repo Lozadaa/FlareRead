@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
+import { motion } from 'framer-motion'
+import { Search, StickyNote, Trash2 } from 'lucide-react'
 import { NoteWithContext, HIGHLIGHT_COLORS } from '@/types'
 
 interface NotesViewProps {
@@ -79,7 +81,7 @@ export function NotesView({ onOpenBook }: NotesViewProps) {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -87,22 +89,25 @@ export function NotesView({ onOpenBook }: NotesViewProps) {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Search and filters */}
-      <div className="px-6 py-4 border-b border-border space-y-3">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search notes and highlights..."
-          className="w-full px-3 py-2 text-sm border border-border rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-        />
+      <div className="px-6 py-4 border-b border-border/50 space-y-3">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search notes and highlights..."
+            className="w-full pl-9 pr-3 py-2.5 text-ui-sm border border-border/50 rounded-xl bg-background text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all"
+          />
+        </div>
         {allTags.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             <button
               onClick={() => setFilterTag(null)}
-              className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+              className={`text-ui-sm px-2.5 py-1 rounded-full transition-all ${
                 filterTag === null
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-secondary-foreground hover:bg-accent'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground'
               }`}
             >
               All
@@ -111,10 +116,10 @@ export function NotesView({ onOpenBook }: NotesViewProps) {
               <button
                 key={tag}
                 onClick={() => setFilterTag(filterTag === tag ? null : tag)}
-                className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
+                className={`text-ui-sm px-2.5 py-1 rounded-full transition-all ${
                   filterTag === tag
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground hover:bg-accent'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'bg-muted/50 text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                 }`}
               >
                 {tag}
@@ -125,47 +130,59 @@ export function NotesView({ onOpenBook }: NotesViewProps) {
       </div>
 
       {/* Notes content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scroll-fade">
         {notes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground/30 mb-3">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-            </svg>
-            <p className="text-ui-lg text-foreground mb-1">No notes yet</p>
-            <p className="text-ui-sm text-muted-foreground">
+            <div className="h-16 w-16 rounded-2xl bg-muted/30 flex items-center justify-center mb-4">
+              <StickyNote className="h-7 w-7 text-muted-foreground/30" />
+            </div>
+            <p className="text-ui-lg font-medium text-foreground mb-1">No notes yet</p>
+            <p className="text-ui-sm text-muted-foreground/70">
               Highlight text while reading to start taking notes
             </p>
           </div>
         ) : filteredNotes.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <p className="text-ui-sm text-muted-foreground">
+            <p className="text-ui-sm text-muted-foreground/70">
               No notes match your search
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
-            {Array.from(bookGroups.entries()).map(([bookId, group]) => (
-              <div key={bookId} className="px-6 py-4">
+          <div className="divide-y divide-border/40">
+            {Array.from(bookGroups.entries()).map(([bookId, group], groupIndex) => (
+              <motion.div
+                key={bookId}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2, delay: groupIndex * 0.05 }}
+                className="px-6 py-5"
+              >
                 {/* Book header */}
-                <div className="mb-3">
+                <div className="mb-3.5">
                   <button
                     onClick={() => onOpenBook?.(bookId)}
-                    className="text-sm font-semibold text-foreground hover:text-primary transition-colors text-left"
+                    className="text-ui-sm font-semibold text-foreground hover:text-primary transition-colors text-left"
                   >
                     {group.title}
                   </button>
                   {group.author && (
-                    <p className="text-xs text-muted-foreground">{group.author}</p>
+                    <p className="text-ui-sm text-muted-foreground/60">{group.author}</p>
                   )}
                 </div>
 
                 {/* Notes for this book */}
                 <div className="space-y-3">
-                  {group.notes.map((note) => {
+                  {group.notes.map((note, noteIndex) => {
                     const noteTags: string[] = (() => { try { return JSON.parse(note.tags || '[]') } catch { return [] } })()
                     const colorObj = HIGHLIGHT_COLORS.find((c) => c.value === note.highlight_color)
                     return (
-                      <div key={note.id} className="flex gap-2">
+                      <motion.div
+                        key={note.id}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.15, delay: noteIndex * 0.03 }}
+                        className="group flex gap-2.5 p-3.5 rounded-xl border border-border/30 bg-card/50 hover:bg-card hover:border-border/50 transition-all"
+                      >
                         {note.highlight_color && (
                           <div
                             className="w-1 rounded-full shrink-0"
@@ -176,55 +193,54 @@ export function NotesView({ onOpenBook }: NotesViewProps) {
                           {/* Highlighted text */}
                           {note.highlight_text && (
                             <p
-                              className="text-sm text-muted-foreground italic mb-1 line-clamp-2"
+                              className="text-ui-sm text-muted-foreground italic mb-1.5 line-clamp-2 rounded px-1.5 py-0.5"
                               style={{
                                 backgroundColor: note.highlight_color
-                                  ? `${note.highlight_color}40`
+                                  ? `${note.highlight_color}18`
                                   : undefined,
-                                padding: note.highlight_color ? '2px 4px' : undefined,
-                                borderRadius: '2px'
                               }}
                             >
-                              "{note.highlight_text}"
+                              &ldquo;{note.highlight_text}&rdquo;
                             </p>
                           )}
                           {/* Note content */}
-                          <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                          <p className="text-ui-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                           {/* Tags */}
                           {noteTags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-1">
+                            <div className="flex flex-wrap gap-1 mt-2">
                               {noteTags.map((tag) => (
-                                <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-primary/10 text-primary rounded-full">
+                                <span key={tag} className="text-xs px-1.5 py-0.5 bg-primary/8 text-primary rounded-full font-medium">
                                   {tag}
                                 </span>
                               ))}
                             </div>
                           )}
                           {/* Actions */}
-                          <div className="flex items-center gap-2 mt-1">
-                            <span className="text-[10px] text-muted-foreground">
+                          <div className="flex items-center gap-2.5 mt-2">
+                            <span className="text-xs text-muted-foreground/50 tabular-nums">
                               {new Date(note.created_at).toLocaleDateString()}
                             </span>
                             <button
                               onClick={() => handleDeleteNote(note.id)}
-                              className="text-[10px] text-muted-foreground hover:text-destructive transition-colors"
+                              className="text-xs text-muted-foreground/40 hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-0.5"
                             >
+                              <Trash2 className="h-2.5 w-2.5" />
                               Delete
                             </button>
                           </div>
                         </div>
-                      </div>
+                      </motion.div>
                     )
                   })}
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         )}
       </div>
 
       {/* Footer stats */}
-      <div className="px-6 py-2 border-t border-border text-xs text-muted-foreground shrink-0">
+      <div className="px-6 py-2.5 border-t border-border/40 text-ui-sm text-muted-foreground/60 shrink-0 tabular-nums">
         {filteredNotes.length} note{filteredNotes.length !== 1 ? 's' : ''} across{' '}
         {bookGroups.size} book{bookGroups.size !== 1 ? 's' : ''}
       </div>

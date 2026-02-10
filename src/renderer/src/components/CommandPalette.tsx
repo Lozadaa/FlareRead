@@ -223,26 +223,30 @@ export function CommandPalette({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogPortal>
-        <DialogOverlay className="bg-black/50" />
+        <DialogOverlay className="bg-black/40 backdrop-blur-sm" />
         <div
-          className="fixed inset-0 z-50 flex items-start justify-center pt-[20vh]"
+          className="fixed inset-0 z-50 flex items-start justify-center pt-[18vh]"
           onClick={() => setOpen(false)}
         >
           <div
-            className="w-full max-w-[540px] overflow-hidden rounded-lg border border-border/50 bg-popover text-popover-foreground shadow-2xl animate-in fade-in-0 zoom-in-95 duration-150"
+            className="w-full max-w-[560px] overflow-hidden rounded-xl border border-border/40 bg-popover/95 backdrop-blur-xl text-popover-foreground shadow-[0_25px_60px_-15px_rgba(0,0,0,0.3)] animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
         <Command
-          className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-muted-foreground [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-2 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4"
+          className="[&_[cmdk-group-heading]]:px-3 [&_[cmdk-group-heading]]:py-2 [&_[cmdk-group-heading]]:font-medium [&_[cmdk-group-heading]]:text-ui-xs [&_[cmdk-group-heading]]:uppercase [&_[cmdk-group-heading]]:tracking-wider [&_[cmdk-group-heading]]:text-muted-foreground/70 [&_[cmdk-group]:not([hidden])_~[cmdk-group]]:pt-0 [&_[cmdk-group]]:px-2 [&_[cmdk-input-wrapper]_svg]:h-5 [&_[cmdk-input-wrapper]_svg]:w-5 [&_[cmdk-input]]:h-12 [&_[cmdk-item]]:px-3 [&_[cmdk-item]]:py-2.5 [&_[cmdk-item]]:rounded-lg [&_[cmdk-item]_svg]:h-4 [&_[cmdk-item]_svg]:w-4"
           loop
         >
-          <CommandInput
-            placeholder="Search books, notes, actions..."
-            value={search}
-            onValueChange={setSearch}
-          />
-          <CommandList className="max-h-[360px]">
-            <CommandEmpty>No results found.</CommandEmpty>
+          <div className="border-b border-border/50">
+            <CommandInput
+              placeholder="Search books, notes, actions..."
+              value={search}
+              onValueChange={setSearch}
+            />
+          </div>
+          <CommandList className="max-h-[360px] py-2">
+            <CommandEmpty className="py-8 text-center text-ui-sm text-muted-foreground">
+              No results found.
+            </CommandEmpty>
 
             {/* ─── Recent Commands ─────────────────── */}
             {showRecent && (
@@ -270,15 +274,15 @@ export function CommandPalette({
                       if (recent.id === 'action:session-stop') handleSessionToggle()
                     }}
                   >
-                    <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <span>{recent.label}</span>
-                    <CommandShortcut>{recent.category}</CommandShortcut>
+                    <Clock className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                    <span className="text-ui-sm">{recent.label}</span>
+                    <CommandShortcut className="text-ui-sm text-muted-foreground/50">{recent.category}</CommandShortcut>
                   </CommandItem>
                 ))}
               </CommandGroup>
             )}
 
-            {showRecent && <CommandSeparator />}
+            {showRecent && <CommandSeparator className="mx-2 bg-border/50" />}
 
             {/* ─── Books ──────────────────────────── */}
             <CommandGroup heading="Books">
@@ -288,11 +292,11 @@ export function CommandPalette({
                   value={`book ${book.title} ${book.author || ''}`}
                   onSelect={() => handleOpenBook(book)}
                 >
-                  <BookOpen className="mr-2 h-4 w-4 text-primary" />
+                  <BookOpen className="mr-2.5 h-4 w-4 text-primary/70" />
                   <div className="flex flex-col min-w-0">
-                    <span className="truncate">{book.title}</span>
+                    <span className="truncate text-ui-sm">{book.title}</span>
                     {book.author && (
-                      <span className="text-xs text-muted-foreground truncate">
+                      <span className="text-ui-sm text-muted-foreground/70 truncate">
                         {book.author}
                       </span>
                     )}
@@ -301,7 +305,7 @@ export function CommandPalette({
               ))}
             </CommandGroup>
 
-            <CommandSeparator />
+            <CommandSeparator className="mx-2 bg-border/50" />
 
             {/* ─── Highlights ─────────────────────── */}
             {searchableHighlights.length > 0 && (
@@ -316,16 +320,16 @@ export function CommandPalette({
                     }}
                   >
                     <Highlighter
-                      className="mr-2 h-4 w-4 shrink-0"
+                      className="mr-2.5 h-4 w-4 shrink-0"
                       style={{ color: highlight.color }}
                     />
                     <div className="flex flex-col min-w-0">
-                      <span className="truncate text-sm">
+                      <span className="truncate text-ui-sm">
                         {highlight.text.length > 80
                           ? highlight.text.slice(0, 80) + '...'
                           : highlight.text}
                       </span>
-                      <span className="text-xs text-muted-foreground truncate">
+                      <span className="text-ui-sm text-muted-foreground/70 truncate">
                         {highlight.book_title}
                         {highlight.chapter && ` · ${highlight.chapter}`}
                       </span>
@@ -338,7 +342,7 @@ export function CommandPalette({
             {/* ─── Notes ──────────────────────────── */}
             {searchableNotes.length > 0 && (
               <>
-                <CommandSeparator />
+                <CommandSeparator className="mx-2 bg-border/50" />
                 <CommandGroup heading="Notes">
                   {searchableNotes.map((note) => (
                     <CommandItem
@@ -349,14 +353,14 @@ export function CommandPalette({
                         if (book) handleOpenBook(book)
                       }}
                     >
-                      <StickyNote className="mr-2 h-4 w-4 shrink-0 text-amber-500" />
+                      <StickyNote className="mr-2.5 h-4 w-4 shrink-0 text-gold" />
                       <div className="flex flex-col min-w-0">
-                        <span className="truncate text-sm">
+                        <span className="truncate text-ui-sm">
                           {note.content.length > 80
                             ? note.content.slice(0, 80) + '...'
                             : note.content}
                         </span>
-                        <span className="text-xs text-muted-foreground truncate">
+                        <span className="text-ui-sm text-muted-foreground/70 truncate">
                           {note.book_title || 'Unknown Book'}
                         </span>
                       </div>
@@ -366,7 +370,7 @@ export function CommandPalette({
               </>
             )}
 
-            <CommandSeparator />
+            <CommandSeparator className="mx-2 bg-border/50" />
 
             {/* ─── Navigation ─────────────────────── */}
             <CommandGroup heading="Navigation">
@@ -374,47 +378,47 @@ export function CommandPalette({
                 value="navigate dashboard"
                 onSelect={() => handleNavigate('dashboard', 'Dashboard')}
               >
-                <LayoutDashboard className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Go to Dashboard</span>
-                <CommandShortcut>Navigation</CommandShortcut>
+                <LayoutDashboard className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Go to Dashboard</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Navigation</CommandShortcut>
               </CommandItem>
               <CommandItem
                 value="navigate library"
                 onSelect={() => handleNavigate('library', 'Library')}
               >
-                <Library className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Go to Library</span>
-                <CommandShortcut>Navigation</CommandShortcut>
+                <Library className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Go to Library</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Navigation</CommandShortcut>
               </CommandItem>
               <CommandItem
                 value="navigate sessions"
                 onSelect={() => handleNavigate('sessions', 'Sessions')}
               >
-                <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Go to Sessions</span>
-                <CommandShortcut>Navigation</CommandShortcut>
+                <Clock className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Go to Sessions</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Navigation</CommandShortcut>
               </CommandItem>
               <CommandItem
                 value="navigate notes highlights"
                 onSelect={() => handleNavigate('notes', 'Notes')}
               >
-                <StickyNote className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Go to Notes & Highlights</span>
-                <CommandShortcut>Navigation</CommandShortcut>
+                <StickyNote className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Go to Notes & Highlights</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Navigation</CommandShortcut>
               </CommandItem>
             </CommandGroup>
 
-            <CommandSeparator />
+            <CommandSeparator className="mx-2 bg-border/50" />
 
             {/* ─── Actions ────────────────────────── */}
             <CommandGroup heading="Actions">
               <CommandItem value="switch toggle theme dark light" onSelect={handleToggleTheme}>
                 {theme === 'light' ? (
-                  <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Moon className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
                 ) : (
-                  <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Sun className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
                 )}
-                <span>{theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}</span>
+                <span className="text-ui-sm">{theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}</span>
               </CommandItem>
 
               <CommandItem
@@ -422,11 +426,11 @@ export function CommandPalette({
                 onSelect={handleToggleFullscreen}
               >
                 {isFullscreen ? (
-                  <Minimize className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Minimize className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
                 ) : (
-                  <Maximize className="mr-2 h-4 w-4 text-muted-foreground" />
+                  <Maximize className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
                 )}
-                <span>{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
+                <span className="text-ui-sm">{isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}</span>
               </CommandItem>
 
               {hasActiveSession && (
@@ -434,8 +438,8 @@ export function CommandPalette({
                   value="stop pomodoro session timer"
                   onSelect={handleSessionToggle}
                 >
-                  <TimerOff className="mr-2 h-4 w-4 text-muted-foreground" />
-                  <span>Stop Current Session</span>
+                  <TimerOff className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                  <span className="text-ui-sm">Stop Current Session</span>
                 </CommandItem>
               )}
 
@@ -443,9 +447,9 @@ export function CommandPalette({
                 value="import epub add book"
                 onSelect={handleImport}
               >
-                <FileText className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Import EPUB</span>
-                <CommandShortcut>Ctrl+O</CommandShortcut>
+                <FileText className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Import EPUB</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Ctrl+O</CommandShortcut>
               </CommandItem>
 
               <CommandItem
@@ -456,8 +460,8 @@ export function CommandPalette({
                   )
                 }}
               >
-                <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Search Notes & Highlights</span>
+                <Search className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Search Notes & Highlights</span>
               </CommandItem>
 
               <CommandItem
@@ -468,25 +472,25 @@ export function CommandPalette({
                   )
                 }}
               >
-                <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                <span>Open Settings</span>
-                <CommandShortcut>Ctrl+,</CommandShortcut>
+                <Settings className="mr-2.5 h-4 w-4 text-muted-foreground/60" />
+                <span className="text-ui-sm">Open Settings</span>
+                <CommandShortcut className="text-ui-sm text-muted-foreground/50">Ctrl+,</CommandShortcut>
               </CommandItem>
             </CommandGroup>
           </CommandList>
 
           {/* Footer hint */}
-          <div className="flex items-center justify-between border-t px-3 py-2">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-border/50 px-4 py-2.5 bg-muted/20">
+            <div className="flex items-center gap-2 text-ui-sm text-muted-foreground/60">
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-1.5 font-mono text-xs font-medium text-muted-foreground/70">
                 ↑↓
               </kbd>
               <span>Navigate</span>
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground ml-2">
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-1.5 font-mono text-xs font-medium text-muted-foreground/70 ml-1">
                 ↵
               </kbd>
               <span>Select</span>
-              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground ml-2">
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded-md border border-border/60 bg-muted/50 px-1.5 font-mono text-xs font-medium text-muted-foreground/70 ml-1">
                 Esc
               </kbd>
               <span>Close</span>

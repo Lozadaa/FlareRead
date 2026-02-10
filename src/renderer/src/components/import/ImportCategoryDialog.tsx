@@ -52,14 +52,14 @@ export function ImportCategoryDialog({
         </DialogHeader>
 
         {/* Book preview */}
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-accent/50">
-          <div className="w-10 h-14 bg-primary/10 rounded flex items-center justify-center shrink-0">
-            <BookOpen className="h-5 w-5 text-primary/40" />
+        <div className="flex items-center gap-3.5 p-3.5 rounded-xl bg-gradient-to-br from-primary/5 to-gold/5 border border-primary/10">
+          <div className="w-10 h-14 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+            <BookOpen className="h-5 w-5 text-primary/30" />
           </div>
           <div className="min-w-0">
-            <p className="text-ui-sm font-medium truncate">{meta.title}</p>
+            <p className="text-ui-sm font-medium text-foreground truncate">{meta.title}</p>
             {meta.author && (
-              <p className="text-ui-xs text-muted-foreground truncate">{meta.author}</p>
+              <p className="text-ui-xs text-muted-foreground/70 truncate">{meta.author}</p>
             )}
           </div>
         </div>

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { FilePlus } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { ReaderView } from '@/components/reader/ReaderView'
 import { AppShell, TopBar } from '@/components/layout'
 import { Dashboard } from '@/components/dashboard/Dashboard'
@@ -12,7 +12,7 @@ import { ReentryRecap } from '@/components/recap/ReentryRecap'
 import { SettingsView, FirstRunWizard } from '@/components/settings'
 import { SoundscapeMiniPlayer } from '@/components/soundscape'
 import { GoalsView } from '@/components/goals/GoalsView'
-import { Button } from '@/components/ui/button'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Book, ImportResponse, ParsedEpubMeta, ReadingMode } from '@/types'
 import { useRecap } from '@/hooks/useRecap'
 import { useSettings, type AppSettings } from '@/hooks/useSettings'
@@ -332,82 +332,105 @@ function App(): JSX.Element {
             <TopBar
               breadcrumbs={[{ label: PAGE_TITLES[currentPage] }]}
               actions={
-                <Button size="sm" onClick={handleImportDialog} className="gap-2">
-                  <FilePlus className="h-4 w-4" />
-                  Import EPUB
-                </Button>
+                <button
+                  onClick={handleImportDialog}
+                  className="group flex items-center gap-1.5 px-3 py-1.5 rounded-md text-ui-sm font-medium text-muted-foreground hover:text-foreground transition-all duration-200 import-btn"
+                >
+                  <Plus className="h-4 w-4 text-primary transition-transform duration-200 group-hover:rotate-90" />
+                  <span className="relative">
+                    Import
+                    <span className="absolute left-0 -bottom-0.5 w-0 h-[1px] bg-primary/50 transition-all duration-300 group-hover:w-full" />
+                  </span>
+                </button>
               }
             />
           )}
 
-          {currentPage === 'settings' && (
-            <>
-              <TopBar
-                breadcrumbs={[{ label: 'Settings' }]}
-              />
-              <SettingsView
-                settings={settings}
-                onSetSetting={setSetting}
-              />
-            </>
-          )}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentPage}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 4 }}
+              transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+              className="flex-1 flex flex-col min-h-0"
+            >
+              {currentPage === 'settings' && (
+                <>
+                  <TopBar
+                    breadcrumbs={[{ label: 'Settings' }]}
+                  />
+                  <SettingsView
+                    settings={settings}
+                    onSetSetting={setSetting}
+                  />
+                </>
+              )}
 
-          {currentPage === 'dashboard' && (
-            <Dashboard
-              onOpenBook={handleOpenBook}
-              onImportEpub={handleImportDialog}
-              onImportFile={handleImportFile}
-              staleBooks={staleBooks}
-              staleBooksLoading={staleBooksLoading}
-              inactivityDays={inactivityDays}
-              onUpdateInactivityDays={updateInactivityDays}
-              onNavigateGoals={() => handleNavigate('goals')}
-              refreshTrigger={importCount}
-            />
-          )}
+              {currentPage === 'dashboard' && (
+                <Dashboard
+                  onOpenBook={handleOpenBook}
+                  onImportEpub={handleImportDialog}
+                  onImportFile={handleImportFile}
+                  staleBooks={staleBooks}
+                  staleBooksLoading={staleBooksLoading}
+                  inactivityDays={inactivityDays}
+                  onUpdateInactivityDays={updateInactivityDays}
+                  onNavigateGoals={() => handleNavigate('goals')}
+                  refreshTrigger={importCount}
+                />
+              )}
 
-          {currentPage === 'library' && (
-            <LibraryView
-              books={books}
-              loading={loadingBooks}
-              categories={categories}
-              onOpenBook={handleOpenBook}
-              onDeleteBook={handleDeleteBook}
-              onUpdateBook={handleUpdateBook}
-              onCreateCategory={createCategory}
-              onImportFile={handleImportFile}
-              onImportDialog={handleImportDialog}
-            />
-          )}
+              {currentPage === 'library' && (
+                <LibraryView
+                  books={books}
+                  loading={loadingBooks}
+                  categories={categories}
+                  onOpenBook={handleOpenBook}
+                  onDeleteBook={handleDeleteBook}
+                  onUpdateBook={handleUpdateBook}
+                  onCreateCategory={createCategory}
+                  onImportFile={handleImportFile}
+                  onImportDialog={handleImportDialog}
+                />
+              )}
 
-          {currentPage === 'sessions' && (
-            <SessionsView onOpenBook={handleOpenBookById} />
-          )}
+              {currentPage === 'sessions' && (
+                <SessionsView onOpenBook={handleOpenBookById} />
+              )}
 
-          {currentPage === 'notes' && (
-            <NotesView onOpenBook={handleOpenBookById} />
-          )}
+              {currentPage === 'notes' && (
+                <NotesView onOpenBook={handleOpenBookById} />
+              )}
 
-          {currentPage === 'goals' && (
-            <GoalsView />
-          )}
+              {currentPage === 'goals' && (
+                <GoalsView />
+              )}
+            </motion.div>
+          </AnimatePresence>
 
           {/* Toast notifications */}
           <div className="fixed bottom-4 right-4 z-50 flex flex-col gap-2">
-            {toasts.map((toast) => (
-              <div
-                key={toast.id}
-                className={`px-4 py-3 rounded-lg shadow-lg text-ui-sm font-medium animate-in slide-in-from-right fade-in duration-200 ${
-                  toast.type === 'success'
-                    ? 'bg-emerald-500 text-white'
-                    : toast.type === 'warning'
-                      ? 'bg-amber-500 text-white'
-                      : 'bg-red-500 text-white'
-                }`}
-              >
-                {toast.message}
-              </div>
-            ))}
+            <AnimatePresence>
+              {toasts.map((toast) => (
+                <motion.div
+                  key={toast.id}
+                  initial={{ opacity: 0, x: 40, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 40, scale: 0.95 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                  className={`px-4 py-3 rounded-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)] backdrop-blur-lg text-ui-sm font-medium border ${
+                    toast.type === 'success'
+                      ? 'bg-emerald-950/90 text-emerald-100 border-emerald-500/20'
+                      : toast.type === 'warning'
+                        ? 'bg-amber-950/90 text-amber-100 border-amber-500/20'
+                        : 'bg-red-950/90 text-red-100 border-red-500/20'
+                  }`}
+                >
+                  {toast.message}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         </AppShell>
       )}

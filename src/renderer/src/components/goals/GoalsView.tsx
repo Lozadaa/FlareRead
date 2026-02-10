@@ -39,11 +39,11 @@ function getTrackStatus(
 
 function StatusBadge({ status }: { status: ReturnType<typeof getTrackStatus> }): JSX.Element {
   const config = {
-    'on-track': { label: 'On track', className: 'bg-emerald-500/10 text-emerald-600' },
-    behind: { label: 'Behind', className: 'bg-amber-500/10 text-amber-600' },
-    ahead: { label: 'Ahead', className: 'bg-blue-500/10 text-blue-600' },
-    'no-target': { label: 'No target', className: 'bg-muted text-muted-foreground' },
-    completed: { label: 'Completed', className: 'bg-emerald-500/10 text-emerald-600' }
+    'on-track': { label: 'On track', className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+    behind: { label: 'Behind', className: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+    ahead: { label: 'Ahead', className: 'bg-blue-500/10 text-blue-600 dark:text-blue-400' },
+    'no-target': { label: 'No target', className: 'bg-muted/50 text-muted-foreground' },
+    completed: { label: 'Completed', className: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' }
   }
   const { label, className } = config[status]
   return (
@@ -66,7 +66,7 @@ function TrackCard({
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-lg border bg-card p-4 hover:bg-accent/50 transition-colors"
+      className="w-full text-left rounded-xl border border-border/50 bg-card/80 p-4.5 hover:bg-card hover:border-border hover:shadow-card-hover transition-all"
     >
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
@@ -209,17 +209,19 @@ export function GoalsView(): JSX.Element {
           </div>
         ) : filteredTracks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Target className="h-12 w-12 text-muted-foreground/40 mb-4" />
-            <h3 className="text-ui-base font-medium mb-1">
+            <div className="h-16 w-16 rounded-2xl bg-muted/30 flex items-center justify-center mb-4">
+              <Target className="h-7 w-7 text-muted-foreground/30" />
+            </div>
+            <h3 className="text-ui-base font-medium text-foreground mb-1">
               {filter === 'all' ? 'No learning tracks yet' : `No ${filter} tracks`}
             </h3>
-            <p className="text-ui-sm text-muted-foreground mb-4">
+            <p className="text-ui-sm text-muted-foreground/70 mb-4">
               {filter === 'all'
                 ? 'Create a track to set personal learning goals for a category'
                 : 'Try a different filter or create a new track'}
             </p>
             {filter === 'all' && (
-              <Button variant="outline" onClick={() => setShowCreateModal(true)} className="gap-2">
+              <Button variant="outline" onClick={() => setShowCreateModal(true)} className="gap-2 rounded-lg">
                 <Plus className="h-4 w-4" />
                 Create your first track
               </Button>

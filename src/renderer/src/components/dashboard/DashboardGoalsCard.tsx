@@ -3,7 +3,6 @@ import { motion } from 'framer-motion'
 import { Target, Plus, Clock, ArrowRight, Calendar } from 'lucide-react'
 import { useTracks } from '@/hooks/useTracks'
 import { TrackWithProgress } from '@/types'
-import { Progress } from '@/components/ui/progress'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -14,6 +13,7 @@ import {
   DialogDescription,
   DialogFooter
 } from '@/components/ui/dialog'
+import { cn } from '@/lib/utils'
 
 interface DashboardGoalsCardProps {
   onNavigateGoals?: () => void
@@ -32,9 +32,14 @@ export function DashboardGoalsCard({ onNavigateGoals }: DashboardGoalsCardProps)
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.3 }}
       >
-        <h2 className="text-ui-base font-semibold text-foreground mb-4">Goals</h2>
-        <div className="bg-card border border-border rounded-lg p-6 text-center">
-          <Target className="h-8 w-8 text-muted-foreground/40 mx-auto mb-3" />
+        <h2 className="font-display text-xl text-foreground mb-4">
+          <span className="text-muted-foreground/40 mr-2">&mdash;</span>
+          Goals
+        </h2>
+        <div className="bg-card border border-border rounded-xl p-8 text-center">
+          <div className="w-12 h-12 rounded-xl bg-primary/[0.06] border border-primary/10 flex items-center justify-center mx-auto mb-4">
+            <Target className="h-5 w-5 text-primary/40" />
+          </div>
           <p className="text-ui-sm text-muted-foreground">
             No learning goals set. Create one to track your progress.
           </p>
@@ -50,13 +55,16 @@ export function DashboardGoalsCard({ onNavigateGoals }: DashboardGoalsCardProps)
       transition={{ duration: 0.3 }}
     >
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-ui-base font-semibold text-foreground">Goals</h2>
+        <h2 className="font-display text-xl text-foreground">
+          <span className="text-muted-foreground/40 mr-2">&mdash;</span>
+          Goals
+        </h2>
         <button
           onClick={() => onNavigateGoals?.()}
-          className="text-ui-xs text-primary hover:text-primary/80 transition-colors flex items-center gap-1"
+          className="text-ui-sm text-primary hover:text-primary/80 transition-colors flex items-center gap-1 group"
         >
           View all goals
-          <ArrowRight className="h-3 w-3" />
+          <ArrowRight className="h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
         </button>
       </div>
 
@@ -112,62 +120,105 @@ function TrackCard({ track, index, onAddHours, onAdjustGoal }: TrackCardProps): 
 
   const categoryColor = category?.color ?? '#6366f1'
 
+  // SVG arc for circular progress
+  const radius = 28
+  const circumference = 2 * Math.PI * radius
+  const strokeDashoffset = circumference - (percent / 100) * circumference
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.2, delay: index * 0.05 }}
-      className="bg-card border border-border rounded-lg p-4 hover:border-primary/30 hover:shadow-sm transition-all"
+      transition={{ duration: 0.25, delay: index * 0.06 }}
+      className={cn(
+        'bg-card border border-border rounded-xl p-4',
+        'hover:border-primary/20 hover:-translate-y-0.5',
+        'hover:shadow-[0_6px_24px_-4px_hsla(var(--primary),0.08)]',
+        'transition-all duration-300'
+      )}
     >
-      {/* Category header */}
-      <div className="flex items-center gap-2 mb-3">
-        <div
-          className="w-2.5 h-2.5 rounded-full shrink-0"
-          style={{ backgroundColor: categoryColor }}
-        />
-        <span className="text-ui-sm font-medium text-foreground truncate">
-          {category?.name ?? 'Unknown'}
-        </span>
-      </div>
-
-      {/* Progress bar */}
-      <div className="space-y-1.5 mb-3">
-        <div className="flex items-center gap-2">
-          <Progress value={percent} className="h-1.5 flex-1" />
-          <span className="text-ui-xs font-medium text-muted-foreground shrink-0">
-            {percent}%
+      {/* Header with category + circular progress */}
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2.5">
+          <div
+            className="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-offset-2 ring-offset-card"
+            style={{ backgroundColor: categoryColor, boxShadow: `0 0 8px ${categoryColor}33` }}
+          />
+          <span className="text-ui-sm font-medium text-foreground truncate">
+            {category?.name ?? 'Unknown'}
           </span>
         </div>
-        <p className="text-ui-xs text-muted-foreground">
-          {progress.totalHours.toFixed(1)} / {targetHours} hours
-        </p>
+
+        {/* Circular progress indicator */}
+        <div className="relative w-[68px] h-[68px] shrink-0">
+          <svg className="w-full h-full -rotate-90" viewBox="0 0 64 64">
+            <circle
+              cx="32"
+              cy="32"
+              r={radius}
+              fill="none"
+              stroke="hsl(var(--border))"
+              strokeWidth="3"
+            />
+            <circle
+              cx="32"
+              cy="32"
+              r={radius}
+              fill="none"
+              stroke={categoryColor}
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              className="transition-all duration-700 ease-out"
+              style={{ filter: `drop-shadow(0 0 4px ${categoryColor}44)` }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="font-mono text-ui-sm font-bold text-foreground">{percent}%</span>
+          </div>
+        </div>
       </div>
 
-      {/* ETA */}
-      {etaText && (
-        <div className="flex items-center gap-1.5 mb-3 text-ui-xs text-muted-foreground">
-          <Calendar className="h-3 w-3" />
-          <span>ETA {etaText}</span>
-        </div>
-      )}
+      {/* Hours progress */}
+      <p className="text-ui-sm text-muted-foreground mb-3">
+        <span className="font-mono font-medium text-foreground">{progress.totalHours.toFixed(1)}</span>
+        {' / '}
+        <span className="font-mono">{targetHours}</span>
+        {' hours'}
+      </p>
 
-      {/* Weekly hours */}
-      {track.weekly_target_hours && track.weekly_target_hours > 0 && (
-        <div className="flex items-center gap-1.5 mb-3 text-ui-xs text-muted-foreground">
-          <Clock className="h-3 w-3" />
-          <span>{track.weekly_target_hours} hrs/week target</span>
-        </div>
-      )}
+      {/* Meta info */}
+      <div className="space-y-1.5 mb-3">
+        {etaText && (
+          <div className="flex items-center gap-1.5 text-ui-sm text-muted-foreground">
+            <Calendar className="h-3 w-3" />
+            <span>ETA {etaText}</span>
+          </div>
+        )}
+
+        {track.weekly_target_hours && track.weekly_target_hours > 0 && (
+          <div className="flex items-center gap-1.5 text-ui-sm text-muted-foreground">
+            <Clock className="h-3 w-3" />
+            <span>{track.weekly_target_hours} hrs/week target</span>
+          </div>
+        )}
+      </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-2 pt-2 border-t border-border">
-        <Button size="sm" variant="outline" className="gap-1.5 text-ui-xs" onClick={onAddHours}>
+      <div className="flex items-center gap-2 pt-3 border-t border-border">
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 text-ui-sm hover:border-primary/30 hover:bg-primary/[0.04]"
+          onClick={onAddHours}
+        >
           <Plus className="h-3 w-3" />
           Add hours
         </Button>
         <button
           onClick={onAdjustGoal}
-          className="text-ui-xs text-primary hover:text-primary/80 transition-colors ml-auto"
+          className="text-ui-sm text-primary hover:text-primary/80 transition-colors ml-auto"
         >
           Adjust goal
         </button>
@@ -216,7 +267,7 @@ function AddHoursModal({ track, onClose, onSubmit }: AddHoursModalProps): JSX.El
         <div className="space-y-4 py-2">
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="text-ui-xs font-medium text-foreground mb-1 block">Hours</label>
+              <label className="text-ui-sm font-medium text-foreground mb-1 block">Hours</label>
               <Input
                 type="number"
                 min="0"
@@ -227,7 +278,7 @@ function AddHoursModal({ track, onClose, onSubmit }: AddHoursModalProps): JSX.El
               />
             </div>
             <div className="flex-1">
-              <label className="text-ui-xs font-medium text-foreground mb-1 block">Minutes</label>
+              <label className="text-ui-sm font-medium text-foreground mb-1 block">Minutes</label>
               <Input
                 type="number"
                 min="0"
@@ -241,7 +292,7 @@ function AddHoursModal({ track, onClose, onSubmit }: AddHoursModalProps): JSX.El
           </div>
 
           <div>
-            <label className="text-ui-xs font-medium text-foreground mb-1 block">Date</label>
+            <label className="text-ui-sm font-medium text-foreground mb-1 block">Date</label>
             <Input
               type="date"
               value={date}
@@ -250,7 +301,7 @@ function AddHoursModal({ track, onClose, onSubmit }: AddHoursModalProps): JSX.El
           </div>
 
           <div>
-            <label className="text-ui-xs font-medium text-foreground mb-1 block">
+            <label className="text-ui-sm font-medium text-foreground mb-1 block">
               Note (optional)
             </label>
             <Input

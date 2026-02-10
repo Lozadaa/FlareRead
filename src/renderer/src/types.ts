@@ -58,13 +58,17 @@ export interface ReadingSettings {
   fontFamily: string
   lineHeight: number
   margin: number
+  scrollMode: boolean
+  contentWidth: number
 }
 
 export const DEFAULT_SETTINGS: ReadingSettings = {
   fontSize: 18,
-  fontFamily: 'Georgia, serif',
-  lineHeight: 1.6,
-  margin: 60
+  fontFamily: 'Literata, Georgia, serif',
+  lineHeight: 1.8,
+  margin: 40,
+  scrollMode: false,
+  contentWidth: 65
 }
 
 export interface BookWithProgress extends Book {
@@ -235,11 +239,12 @@ export interface ManualTimeEntry {
 }
 
 export const FONT_FAMILIES = [
-  { label: 'Georgia', value: 'Georgia, serif' },
-  { label: 'Times New Roman', value: '"Times New Roman", serif' },
-  { label: 'Palatino', value: '"Palatino Linotype", "Book Antiqua", Palatino, serif' },
-  { label: 'System Sans', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' },
   { label: 'Literata', value: 'Literata, Georgia, serif' },
+  { label: 'Georgia', value: 'Georgia, serif' },
+  { label: 'Lora', value: 'Lora, Georgia, serif' },
   { label: 'Merriweather', value: 'Merriweather, Georgia, serif' },
-  { label: 'Lora', value: 'Lora, Georgia, serif' }
+  { label: 'Cormorant Garamond', value: '"Cormorant Garamond", Georgia, serif' },
+  { label: 'Palatino', value: '"Palatino Linotype", "Book Antiqua", Palatino, serif' },
+  { label: 'Times New Roman', value: '"Times New Roman", serif' },
+  { label: 'System Sans', value: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif' }
 ]

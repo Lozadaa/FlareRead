@@ -13,7 +13,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Progress } from '@/components/ui/progress'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import {
   Category,
@@ -42,13 +41,13 @@ function StatCard({
   subtext?: string
 }): JSX.Element {
   return (
-    <div className="rounded-lg border bg-card p-4">
-      <div className="flex items-center gap-2 text-muted-foreground mb-1">
+    <div className="rounded-xl border border-border/50 bg-card/80 p-4">
+      <div className="flex items-center gap-2 text-muted-foreground/70 mb-1.5">
         <Icon className="h-4 w-4" />
-        <span className="text-xs">{label}</span>
+        <span className="text-ui-sm font-medium">{label}</span>
       </div>
-      <div className="text-ui-lg font-semibold">{value}</div>
-      {subtext && <div className="text-xs text-muted-foreground mt-0.5">{subtext}</div>}
+      <div className="text-ui-lg font-semibold text-foreground">{value}</div>
+      {subtext && <div className="text-ui-sm text-muted-foreground/60 mt-0.5">{subtext}</div>}
     </div>
   )
 }
@@ -199,11 +198,11 @@ export function TrackDetailView({
         </div>
 
         {/* Progress Section */}
-        <div className="rounded-lg border bg-card p-5 mb-6">
+        <div className="rounded-xl border border-border/50 bg-card/80 p-5 mb-6">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-ui-sm font-medium">Progress</span>
+            <span className="text-ui-sm font-medium text-foreground">Progress</span>
             {hasTarget && (
-              <span className="text-ui-sm text-muted-foreground">
+              <span className="text-ui-sm font-semibold text-primary tabular-nums">
                 {track.progress.percentComplete.toFixed(0)}%
               </span>
             )}
@@ -211,15 +210,15 @@ export function TrackDetailView({
 
           <Progress
             value={hasTarget ? track.progress.percentComplete : 0}
-            className="h-3 mb-4"
+            className="h-2.5 mb-4"
           />
 
-          <div className="text-ui-lg font-semibold mb-1">
+          <div className="text-ui-lg font-semibold text-foreground mb-1.5">
             {track.progress.totalHours.toFixed(1)}
             {hasTarget ? ` / ${track.target_hours_total} hrs` : ' hrs total'}
           </div>
 
-          <div className="text-xs text-muted-foreground space-y-0.5">
+          <div className="text-sm text-muted-foreground/70 space-y-0.5">
             <div>{activeHours.toFixed(1)} hrs from reading sessions</div>
             <div>{manualHours.toFixed(1)} hrs from manual entries</div>
             {baseHours > 0 && <div>{baseHours.toFixed(1)} hrs historical baseline</div>}
@@ -245,7 +244,7 @@ export function TrackDetailView({
           />
         </div>
 
-        <Separator className="my-6" />
+        <div className="h-px bg-border/40 my-6" />
 
         {/* Goal Settings */}
         <div className="mb-6">
@@ -268,7 +267,7 @@ export function TrackDetailView({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
+                <label className="text-ui-sm text-muted-foreground mb-1 block">
                   Target hours (personal goal)
                 </label>
                 {editing ? (
@@ -287,7 +286,7 @@ export function TrackDetailView({
                 )}
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
+                <label className="text-ui-sm text-muted-foreground mb-1 block">
                   Weekly target (personal pace)
                 </label>
                 {editing ? (
@@ -311,7 +310,7 @@ export function TrackDetailView({
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">Deadline</label>
+                <label className="text-ui-sm text-muted-foreground mb-1 block">Deadline</label>
                 {editing ? (
                   <Input
                     type="date"
@@ -327,7 +326,7 @@ export function TrackDetailView({
                 )}
               </div>
               <div>
-                <label className="text-xs text-muted-foreground mb-1 block">
+                <label className="text-ui-sm text-muted-foreground mb-1 block">
                   Manual base hours (historical)
                 </label>
                 {editing ? (
@@ -348,14 +347,14 @@ export function TrackDetailView({
             </div>
 
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Notes</label>
+              <label className="text-ui-sm text-muted-foreground mb-1 block">Notes</label>
               {editing ? (
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Personal notes about this learning goal..."
                   rows={3}
-                  className="flex w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                  className="flex w-full rounded-xl border border-border/50 bg-background px-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/30 transition-all resize-none"
                 />
               ) : (
                 <div className="text-ui-sm py-2 text-muted-foreground">
@@ -365,7 +364,7 @@ export function TrackDetailView({
             </div>
 
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Source label</label>
+              <label className="text-ui-sm text-muted-foreground mb-1 block">Source label</label>
               {editing ? (
                 <Input
                   value={sourceLabel}
@@ -378,7 +377,7 @@ export function TrackDetailView({
                 </div>
               )}
               {editing && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-ui-sm text-muted-foreground mt-1">
                   Describe where your target comes from — this is your personal reference
                 </p>
               )}
@@ -386,7 +385,7 @@ export function TrackDetailView({
           </div>
         </div>
 
-        <Separator className="my-6" />
+        <div className="h-px bg-border/40 my-6" />
 
         {/* Manual Time Log */}
         <div className="mb-6">
@@ -422,24 +421,24 @@ export function TrackDetailView({
               <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
             </div>
           ) : entries.length === 0 ? (
-            <div className="text-center py-6 text-ui-sm text-muted-foreground">
+            <div className="text-center py-8 text-ui-sm text-muted-foreground/60">
               No manual time entries yet
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="rounded-xl border border-border/50 overflow-hidden divide-y divide-border/40">
               {entries.map((entry) => (
                 <div
                   key={entry.id}
-                  className="flex items-center justify-between py-2 px-3 rounded-md hover:bg-muted/50"
+                  className="flex items-center justify-between py-2.5 px-4 hover:bg-muted/20 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground w-20 shrink-0">
+                    <span className="text-ui-sm text-muted-foreground/60 w-20 shrink-0 tabular-nums">
                       {new Date(entry.occurred_at).toLocaleDateString()}
                     </span>
                     <span
                       className={cn(
-                        'text-ui-sm font-medium',
-                        entry.delta_minutes >= 0 ? 'text-emerald-600' : 'text-red-500'
+                        'text-ui-sm font-medium tabular-nums',
+                        entry.delta_minutes >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'
                       )}
                     >
                       {entry.delta_minutes >= 0 ? '+' : ''}
@@ -447,7 +446,7 @@ export function TrackDetailView({
                     </span>
                   </div>
                   {entry.note && (
-                    <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                    <span className="text-ui-sm text-muted-foreground/60 truncate max-w-[200px]">
                       {entry.note}
                     </span>
                   )}
@@ -457,40 +456,40 @@ export function TrackDetailView({
           )}
         </div>
 
-        <Separator className="my-6" />
+        <div className="h-px bg-border/40 my-6" />
 
         {/* Books in this category */}
         <div className="mb-6">
-          <h2 className="text-ui-base font-medium mb-4">Books in this category</h2>
+          <h2 className="text-ui-base font-medium text-foreground mb-4">Books in this category</h2>
           {booksLoading ? (
             <div className="flex items-center justify-center py-6">
               <div className="animate-spin h-5 w-5 border-2 border-primary border-t-transparent rounded-full" />
             </div>
           ) : books.length === 0 ? (
-            <div className="text-center py-6 text-ui-sm text-muted-foreground">
+            <div className="text-center py-8 text-ui-sm text-muted-foreground/60">
               No books in this category yet
             </div>
           ) : (
-            <div className="space-y-1">
+            <div className="rounded-xl border border-border/50 overflow-hidden divide-y divide-border/40">
               {books.map((book) => (
                 <div
                   key={book.id}
-                  className="flex items-center gap-3 py-2 px-3 rounded-md hover:bg-muted/50"
+                  className="flex items-center gap-3 py-3 px-4 hover:bg-muted/20 transition-colors"
                 >
-                  <BookOpen className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <BookOpen className="h-4 w-4 text-muted-foreground/50 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-ui-sm font-medium truncate">{book.title}</div>
+                    <div className="text-ui-sm font-medium text-foreground truncate">{book.title}</div>
                     {book.author && (
-                      <div className="text-xs text-muted-foreground truncate">{book.author}</div>
+                      <div className="text-ui-sm text-muted-foreground/60 truncate">{book.author}</div>
                     )}
                   </div>
                   {book.reading_mode && (
                     <span
                       className={cn(
-                        'text-xs px-2 py-0.5 rounded-full',
+                        'text-ui-sm font-medium px-2 py-0.5 rounded-full',
                         book.reading_mode === 'study'
-                          ? 'bg-blue-500/10 text-blue-600'
-                          : 'bg-purple-500/10 text-purple-600'
+                          ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400'
+                          : 'bg-purple-500/10 text-purple-600 dark:text-purple-400'
                       )}
                     >
                       {book.reading_mode}

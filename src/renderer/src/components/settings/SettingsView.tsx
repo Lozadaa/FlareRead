@@ -9,7 +9,6 @@ import {
   ChevronRight
 } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTheme, type ThemeMode } from '@/components/ThemeProvider'
@@ -48,7 +47,7 @@ export function SettingsView({ settings, onSetSetting }: SettingsViewProps): JSX
   return (
     <div className="flex-1 flex overflow-hidden">
       {/* Section nav */}
-      <nav className="w-52 shrink-0 border-r border-border bg-muted/30 py-4 px-2">
+      <nav className="w-52 shrink-0 border-r border-border/50 bg-muted/20 py-5 px-3">
         <div className="space-y-0.5">
           {SECTIONS.map((section) => (
             <Button
@@ -57,16 +56,16 @@ export function SettingsView({ settings, onSetSetting }: SettingsViewProps): JSX
               size="sm"
               onClick={() => setActiveSection(section.id)}
               className={cn(
-                'w-full justify-start gap-2 text-ui-sm',
+                'w-full justify-start gap-2.5 text-ui-sm rounded-lg h-9 transition-all',
                 activeSection === section.id
-                  ? 'bg-accent text-accent-foreground font-medium'
-                  : 'text-muted-foreground hover:text-foreground'
+                  ? 'bg-primary/8 text-primary font-medium shadow-[inset_0_0_0_1px_hsla(var(--primary),0.12)]'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
               )}
             >
               <section.icon className="h-4 w-4" />
               {section.label}
               {activeSection === section.id && (
-                <ChevronRight className="h-3 w-3 ml-auto" />
+                <ChevronRight className="h-3 w-3 ml-auto text-primary/60" />
               )}
             </Button>
           ))}
@@ -75,7 +74,7 @@ export function SettingsView({ settings, onSetSetting }: SettingsViewProps): JSX
 
       {/* Content */}
       <ScrollArea className="flex-1">
-        <div className="max-w-2xl p-6 space-y-6">
+        <div className="max-w-2xl p-8 space-y-8">
           {activeSection === 'appearance' && (
             <AppearanceSection settings={settings} onSetSetting={onSetSetting} />
           )}
@@ -107,9 +106,13 @@ function SettingGroup({ title, description, children }: {
 }): JSX.Element {
   return (
     <div>
-      <h3 className="text-ui-base font-semibold text-foreground">{title}</h3>
-      {description && <p className="text-ui-sm text-muted-foreground mt-0.5">{description}</p>}
-      <div className="mt-4 space-y-4">{children}</div>
+      <h3 className="text-ui-lg font-semibold text-foreground">{title}</h3>
+      {description && <p className="text-ui-sm text-muted-foreground mt-1">{description}</p>}
+      <div className="mt-6 space-y-1">
+        <div className="rounded-xl border border-border/50 overflow-hidden divide-y divide-border/40">
+          {children}
+        </div>
+      </div>
     </div>
   )
 }
@@ -120,10 +123,10 @@ function SettingRow({ label, description, children }: {
   children: React.ReactNode
 }): JSX.Element {
   return (
-    <div className="flex items-center justify-between gap-4">
+    <div className="flex items-center justify-between gap-4 px-5 py-4 hover:bg-muted/20 transition-colors">
       <div className="min-w-0">
         <p className="text-ui-sm font-medium text-foreground">{label}</p>
-        {description && <p className="text-ui-xs text-muted-foreground mt-0.5">{description}</p>}
+        {description && <p className="text-ui-xs text-muted-foreground/70 mt-0.5">{description}</p>}
       </div>
       <div className="shrink-0">{children}</div>
     </div>
@@ -161,7 +164,7 @@ function Select({ value, onChange, options }: {
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="h-8 rounded-md border border-input bg-background px-2 text-ui-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+      className="h-8 rounded-lg border border-border/60 bg-background px-2.5 text-ui-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring/40 transition-shadow"
     >
       {options.map((opt) => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -190,9 +193,9 @@ function NumberInput({ value, onChange, min, max, step = 1, suffix }: {
         min={min}
         max={max}
         step={step}
-        className="h-8 w-20 rounded-md border border-input bg-background px-2 text-ui-sm text-foreground text-right focus:outline-none focus:ring-2 focus:ring-ring"
+        className="h-8 w-20 rounded-lg border border-border/60 bg-background px-2.5 text-ui-sm text-foreground text-right focus:outline-none focus:ring-2 focus:ring-ring/40 transition-shadow"
       />
-      {suffix && <span className="text-ui-xs text-muted-foreground">{suffix}</span>}
+      {suffix && <span className="text-ui-xs text-muted-foreground/70">{suffix}</span>}
     </div>
   )
 }
@@ -216,7 +219,7 @@ function SliderWithValue({ value, onChange, min, max, step = 1, suffix }: {
         step={step}
         className="flex-1 h-1.5 rounded-full appearance-none bg-input accent-primary cursor-pointer"
       />
-      <span className="text-ui-sm text-foreground tabular-nums w-12 text-right">
+      <span className="text-ui-sm text-foreground tabular-nums w-12 text-right font-medium">
         {value}{suffix}
       </span>
     </div>
@@ -241,22 +244,23 @@ function AppearanceSection({ settings, onSetSetting }: {
       <SettingGroup title="Appearance" description="Customize the look and feel of JustRead">
         {/* Theme */}
         <SettingRow label="Theme" description="Choose your preferred color scheme">
-          <div className="flex gap-1">
+          <div className="flex gap-1 p-0.5 rounded-lg bg-muted/50">
             {(['light', 'dark', 'system'] as ThemeMode[]).map((mode) => (
-              <Button
+              <button
                 key={mode}
-                variant={settings['appearance:theme'] === mode ? 'default' : 'outline'}
-                size="sm"
                 onClick={() => handleThemeChange(mode)}
-                className="text-ui-xs capitalize"
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-ui-xs font-medium capitalize transition-all',
+                  settings['appearance:theme'] === mode
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
               >
                 {mode}
-              </Button>
+              </button>
             ))}
           </div>
         </SettingRow>
-
-        <Separator />
 
         {/* Font */}
         <SettingRow label="Reading font" description="Font used for book content">
@@ -323,8 +327,6 @@ function ReadingSection({ settings, onSetSetting }: {
         />
       </SettingRow>
 
-      <Separator />
-
       <SettingRow label="Auto-fullscreen" description="Automatically enter fullscreen when starting a session">
         <Toggle
           checked={settings['reading:autoFullscreen']}
@@ -363,8 +365,6 @@ function SessionsSection({ settings, onSetSetting }: {
         />
       </SettingRow>
 
-      <Separator />
-
       <SettingRow label="AFK timeout" description="Time before detecting you are away">
         <NumberInput
           value={settings['session:afkTimeoutMinutes']}
@@ -384,8 +384,6 @@ function SessionsSection({ settings, onSetSetting }: {
           suffix="min"
         />
       </SettingRow>
-
-      <Separator />
 
       <SettingRow label="Re-entry threshold" description="Days of inactivity before showing a recap">
         <NumberInput
@@ -420,8 +418,6 @@ function FocusWallsSection({ settings, onSetSetting }: {
           ]}
         />
       </SettingRow>
-
-      <Separator />
 
       <SettingRow label="Show timer" description="Display session timer on focus wall">
         <Toggle
@@ -470,8 +466,6 @@ function SoundscapesSection({ settings, onSetSetting }: {
         />
       </SettingRow>
 
-      <Separator />
-
       <SettingRow label="Auto-pause on AFK" description="Pause soundscape when you're away">
         <Toggle
           checked={settings['soundscape:autoPauseOnAfk']}
@@ -485,36 +479,38 @@ function SoundscapesSection({ settings, onSetSetting }: {
 // ─── Section: Keyboard Shortcuts ────────────────────
 
 const SHORTCUTS = [
-  { action: 'Open command palette', keys: 'Ctrl + K' },
-  { action: 'Open settings', keys: 'Ctrl + ,' },
-  { action: 'Import EPUB', keys: 'Ctrl + O' },
-  { action: 'Toggle fullscreen', keys: 'F11' },
-  { action: 'Toggle theme', keys: 'Sidebar button' },
-  { action: 'Next page (reader)', keys: 'Arrow Right' },
-  { action: 'Previous page (reader)', keys: 'Arrow Left' },
-  { action: 'Table of contents (reader)', keys: 'Ctrl + T' },
-  { action: 'Reader settings (reader)', keys: 'Ctrl + .' }
+  { action: 'Open command palette', keys: ['Ctrl', 'K'] },
+  { action: 'Open settings', keys: ['Ctrl', ','] },
+  { action: 'Import EPUB', keys: ['Ctrl', 'O'] },
+  { action: 'Toggle fullscreen', keys: ['F11'] },
+  { action: 'Toggle theme', keys: ['Sidebar button'] },
+  { action: 'Next page (reader)', keys: ['Arrow Right'] },
+  { action: 'Previous page (reader)', keys: ['Arrow Left'] },
+  { action: 'Table of contents (reader)', keys: ['Ctrl', 'T'] },
+  { action: 'Reader settings (reader)', keys: ['Ctrl', '.'] }
 ]
 
 function ShortcutsSection(): JSX.Element {
   return (
     <SettingGroup title="Keyboard Shortcuts" description="Current keyboard bindings">
-      <div className="rounded-lg border border-border overflow-hidden">
-        {SHORTCUTS.map((shortcut, i) => (
-          <div
-            key={shortcut.action}
-            className={cn(
-              'flex items-center justify-between px-4 py-2.5',
-              i !== SHORTCUTS.length - 1 && 'border-b border-border'
-            )}
-          >
-            <span className="text-ui-sm text-foreground">{shortcut.action}</span>
-            <kbd className="inline-flex items-center gap-1 rounded border bg-muted px-2 py-0.5 font-mono text-ui-xs text-muted-foreground">
-              {shortcut.keys}
-            </kbd>
+      {SHORTCUTS.map((shortcut) => (
+        <div
+          key={shortcut.action}
+          className="flex items-center justify-between px-5 py-3 hover:bg-muted/20 transition-colors"
+        >
+          <span className="text-ui-sm text-foreground">{shortcut.action}</span>
+          <div className="flex items-center gap-1">
+            {shortcut.keys.map((key, i) => (
+              <span key={i} className="flex items-center gap-1">
+                {i > 0 && <span className="text-muted-foreground/40 text-xs mx-0.5">+</span>}
+                <kbd className="inline-flex items-center justify-center min-w-[28px] h-6 rounded-md border border-border/60 bg-gradient-to-b from-muted/80 to-muted/40 px-1.5 font-mono text-xs font-medium text-muted-foreground shadow-[0_1px_2px_rgba(0,0,0,0.05),inset_0_1px_0_rgba(255,255,255,0.1)]">
+                  {key}
+                </kbd>
+              </span>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
     </SettingGroup>
   )
 }

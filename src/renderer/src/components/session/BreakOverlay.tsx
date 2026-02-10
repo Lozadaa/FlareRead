@@ -17,46 +17,88 @@ export function BreakOverlay({ session, onSkipBreak }: BreakOverlayProps) {
   if (session.state !== 'break') return null
 
   return (
-    <div className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-indigo-50 dark:from-blue-950/80 dark:to-indigo-950/80 backdrop-blur-md">
-      {/* Animated breathing circle */}
-      <div className="relative mb-8">
-        <div className="w-40 h-40 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center animate-pulse">
-          <div className="w-28 h-28 rounded-full bg-blue-200/60 dark:bg-blue-800/40 flex items-center justify-center">
-            <Coffee className="w-12 h-12 text-blue-500 dark:text-blue-400" />
+    <div className="fixed inset-0 z-[90] flex flex-col items-center justify-center bg-gradient-to-b from-background via-primary/[0.03] to-background backdrop-blur-md">
+      {/* Animated breathing circle with layered rings */}
+      <div className="relative mb-10">
+        {/* Outermost glow ring */}
+        <div
+          className="absolute inset-[-20px] rounded-full opacity-30"
+          style={{
+            background: 'radial-gradient(circle, hsla(var(--primary), 0.08) 0%, transparent 70%)',
+            animation: 'breathe 4s ease-in-out infinite'
+          }}
+        />
+
+        {/* Outer ring */}
+        <div
+          className="w-44 h-44 rounded-full flex items-center justify-center border border-primary/10"
+          style={{
+            background: 'linear-gradient(135deg, hsla(var(--primary), 0.06) 0%, hsla(var(--gold), 0.04) 100%)',
+            animation: 'breathe 4s ease-in-out infinite'
+          }}
+        >
+          {/* Middle ring */}
+          <div
+            className="w-32 h-32 rounded-full flex items-center justify-center border border-gold/10"
+            style={{
+              background: 'linear-gradient(135deg, hsla(var(--gold), 0.08) 0%, hsla(var(--primary), 0.06) 100%)',
+              animation: 'breathe 4s ease-in-out infinite 0.3s'
+            }}
+          >
+            {/* Inner ring */}
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center border border-primary/15"
+              style={{
+                background: 'linear-gradient(135deg, hsla(var(--primary), 0.1) 0%, hsla(var(--gold), 0.08) 100%)',
+                animation: 'breathe 4s ease-in-out infinite 0.6s'
+              }}
+            >
+              <Coffee className="w-8 h-8 text-primary/60" />
+            </div>
           </div>
         </div>
       </div>
 
-      <h2 className="text-3xl font-bold text-blue-800 dark:text-blue-200 mb-2">
+      <h2 className="font-display text-3xl italic text-foreground mb-2">
         Rest
       </h2>
-      <p className="text-lg text-blue-600 dark:text-blue-300 mb-1">
+      <p className="text-ui-lg text-muted-foreground mb-1">
         Take a break, stretch, breathe
       </p>
-      <p className="text-sm text-blue-500/70 dark:text-blue-400/70 mb-8">
+      <p className="text-ui-sm text-muted-foreground/60 mb-8">
         Pomodoro #{session.completedPomodoros} completed
       </p>
 
       {/* Timer countdown */}
-      <div className="text-5xl font-bold tabular-nums text-blue-700 dark:text-blue-300 mb-8">
+      <div className="text-5xl font-mono font-bold tabular-nums text-foreground mb-8 tracking-tight">
         {formatTime(session.pomodoroRemainingSeconds)}
       </div>
 
       <Button
         variant="outline"
         onClick={onSkipBreak}
-        className="gap-2 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/40"
+        className="gap-2 border-border hover:border-primary/30 hover:bg-primary/[0.04] btn-press transition-all duration-300"
       >
         <SkipForward className="w-4 h-4" />
         Skip break
       </Button>
 
       {/* Session stats at bottom */}
-      <div className="absolute bottom-8 flex items-center gap-6 text-sm text-blue-500/60 dark:text-blue-400/60">
-        <span>Active: {Math.round(session.activeMs / 60000)}min</span>
-        <span>{session.highlightsDuring} highlights</span>
-        <span>{session.notesDuring} notes</span>
+      <div className="absolute bottom-8 flex items-center gap-6 text-ui-xs text-muted-foreground/50">
+        <span className="font-mono tabular-nums">Active: {Math.round(session.activeMs / 60000)}min</span>
+        <span className="w-1 h-1 rounded-full bg-border" />
+        <span className="font-mono tabular-nums">{session.highlightsDuring} highlights</span>
+        <span className="w-1 h-1 rounded-full bg-border" />
+        <span className="font-mono tabular-nums">{session.notesDuring} notes</span>
       </div>
+
+      {/* CSS animation for breathing effect */}
+      <style>{`
+        @keyframes breathe {
+          0%, 100% { transform: scale(1); opacity: 0.7; }
+          50% { transform: scale(1.08); opacity: 1; }
+        }
+      `}</style>
     </div>
   )
 }

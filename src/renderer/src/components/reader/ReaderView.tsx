@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef, useState } from 'react'
+import { useEffect, useCallback, useRef, useState, useMemo } from 'react'
 import { useEpubReader } from '@/hooks/useEpubReader'
 import { useReadingSettings } from '@/hooks/useReadingSettings'
 import { useAnnotations } from '@/hooks/useAnnotations'
@@ -9,6 +9,7 @@ import { SettingsPanel } from './SettingsPanel'
 import { TopBar } from './TopBar'
 import { HighlightToolbar } from './HighlightToolbar'
 import { AnnotationsSidebar } from './AnnotationsSidebar'
+import { ImageLightbox } from './ImageLightbox'
 import { SessionTimer, AfkModal, BreakOverlay, MicrobreakReminder, WrapUpScreen, StartSessionDialog } from '@/components/session'
 import { SessionStartConfig } from '@/types'
 
@@ -26,8 +27,10 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
   const [focusMode, setFocusMode] = useState(false)
   const [annotationsOpen, setAnnotationsOpen] = useState(false)
   const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
   const selectionCfiRef = useRef<string | null>(null)
   const selectionTextRef = useRef<string>('')
+  const wasFullscreenBeforeFocus = useRef(false)
 
   const {
     viewerRef,
@@ -48,7 +51,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     savePosition,
     applyHighlights,
     removeHighlightAnnotation
-  } = useEpubReader({ bookId, filePath, settings, resolvedTheme })
+  } = useEpubReader({ bookId, filePath, settings, resolvedTheme, onImageClick: setLightboxSrc })
 
   const {
     highlights,
@@ -84,6 +87,23 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
   const [showStartDialog, setShowStartDialog] = useState(false)
   const [showWrapUp, setShowWrapUp] = useState(false)
   const wrapUpDismissedRef = useRef(false)
+
+  // Sync focus mode with fullscreen — enter fullscreen on focus, restore on exit
+  useEffect(() => {
+    ;(async () => {
+      if (focusMode) {
+        wasFullscreenBeforeFocus.current = await window.appApi.isFullscreen()
+        if (!wasFullscreenBeforeFocus.current) {
+          window.appApi.toggleFullscreen()
+        }
+      } else {
+        const isFs = await window.appApi.isFullscreen()
+        if (isFs && !wasFullscreenBeforeFocus.current) {
+          window.appApi.toggleFullscreen()
+        }
+      }
+    })()
+  }, [focusMode])
 
   // Track mouse/keyboard activity for AFK detection
   useEffect(() => {
@@ -308,20 +328,28 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       switch (e.key) {
         case 'ArrowRight':
         case 'PageDown':
-          e.preventDefault()
-          goNext()
+          if (!settings.scrollMode) {
+            e.preventDefault()
+            goNext()
+          }
           break
         case 'ArrowLeft':
         case 'PageUp':
-          e.preventDefault()
-          goPrev()
+          if (!settings.scrollMode) {
+            e.preventDefault()
+            goPrev()
+          }
           break
         case 'Escape':
           e.preventDefault()
-          setFocusMode((prev) => !prev)
-          setTocOpen(false)
-          setSettingsOpen(false)
-          setAnnotationsOpen(false)
+          if (lightboxSrc) {
+            setLightboxSrc(null)
+          } else {
+            setFocusMode((prev) => !prev)
+            setTocOpen(false)
+            setSettingsOpen(false)
+            setAnnotationsOpen(false)
+          }
           break
         case 'f':
         case 'F':
@@ -335,7 +363,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [goNext, goPrev])
+  }, [goNext, goPrev, settings.scrollMode, lightboxSrc])
 
   // ─── Menu event handlers ──────────────────────────
   useEffect(() => {
@@ -405,7 +433,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
           ) : (
             <button
               onClick={() => setShowStartDialog(true)}
-              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-gray-200 dark:border-gray-700 text-gray-500 hover:text-foreground hover:border-gray-300 dark:hover:border-gray-600 transition-colors"
+              className="flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium border border-border text-muted-foreground hover:text-foreground hover:border-border/80 transition-colors"
               title="Start study session"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -426,22 +454,26 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       </div>
 
       {/* Main Reader Area */}
-      <div className="flex-1 relative overflow-hidden">
+      <div className={`flex-1 relative ${settings.scrollMode ? 'overflow-y-auto' : 'overflow-hidden'}`}>
         {/* Loading Overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-reading-bg z-20 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-3">
-              <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <p className="text-sm text-muted-foreground">Loading book...</p>
+            <div className="flex flex-col items-center gap-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-primary animate-pulse">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+              </svg>
+              <p className="font-body italic text-sm text-muted-foreground">Opening your book...</p>
             </div>
           </div>
         )}
 
         {/* EPUB Viewer Container */}
-        <div ref={viewerRef} className="w-full h-full" />
+        <div className="h-full w-full mx-auto" style={{ maxWidth: `${settings.contentWidth}%`, padding: `0 ${settings.margin}px` }}>
+          <div ref={viewerRef} className="h-full w-full" />
+        </div>
 
-        {/* Navigation Overlays (click zones) */}
-        {!isLoading && (
+        {/* Navigation Overlays (click zones) - hidden in scroll mode */}
+        {!isLoading && !settings.scrollMode && (
           <>
             {/* Left click zone - Previous */}
             <button
@@ -474,28 +506,28 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
         )}
       </div>
 
-      {/* Bottom Navigation Bar */}
-      {!isLoading && (
-        <div className="shrink-0 bg-topbar border-t border-topbar-border px-4 py-2 flex items-center gap-3 select-none">
+      {/* Bottom Navigation Bar - hidden in scroll mode */}
+      {!isLoading && !settings.scrollMode && (
+        <div className="shrink-0 bg-topbar shadow-[0_-1px_3px_rgba(0,0,0,0.05)] px-4 py-1.5 flex items-center gap-3 select-none">
           <button
             onClick={goPrev}
             disabled={atStart}
-            className="p-1.5 rounded-md hover:bg-accent text-muted-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1 rounded-md hover:bg-accent text-muted-foreground disabled:opacity-20 disabled:pointer-events-none transition-all hover:scale-110"
             aria-label="Previous page"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
 
           <div className="flex-1 flex items-center gap-3">
-            <div className="flex-1 h-1.5 bg-border rounded-full overflow-hidden">
+            <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
               <div
-                className="h-full bg-primary rounded-full transition-all duration-500"
+                className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-primary to-sidebar-gold"
                 style={{ width: `${percent}%` }}
               />
             </div>
-            <span className="text-ui-xs text-muted-foreground tabular-nums shrink-0 w-10 text-right">
+            <span className="font-mono text-ui-xs text-muted-foreground tabular-nums shrink-0 w-10 text-right">
               {percent}%
             </span>
           </div>
@@ -503,10 +535,10 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
           <button
             onClick={goNext}
             disabled={atEnd}
-            className="p-1.5 rounded-md hover:bg-accent text-muted-foreground disabled:opacity-30 disabled:pointer-events-none transition-colors"
+            className="p-1 rounded-md hover:bg-accent text-muted-foreground disabled:opacity-20 disabled:pointer-events-none transition-all hover:scale-110"
             aria-label="Next page"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
             </svg>
           </button>
@@ -592,6 +624,9 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
           }}
         />
       )}
+
+      {/* Image Lightbox */}
+      <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />
     </div>
   )
 }

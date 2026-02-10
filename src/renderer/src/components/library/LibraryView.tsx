@@ -4,7 +4,7 @@ import {
   BookOpen,
   Grid3X3,
   List,
-  ArrowUpDown,
+  ChevronDown,
   Trash2,
   Upload,
   FilePlus,
@@ -167,24 +167,42 @@ export function LibraryView({
   return (
     <div
       ref={dropRef}
-      className="flex-1 overflow-y-auto relative"
+      className="flex-1 overflow-y-auto relative scroll-fade"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Drag overlay */}
+      {/* Premium drag overlay */}
       <AnimatePresence>
         {isDragging && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-40 bg-primary/5 border-2 border-dashed border-primary rounded-lg flex items-center justify-center backdrop-blur-[2px]"
+            transition={{ duration: 0.2 }}
+            className="absolute inset-0 z-40 flex items-center justify-center"
+            style={{
+              background: 'linear-gradient(135deg, hsla(var(--gold), 0.08) 0%, hsla(var(--primary), 0.06) 100%)',
+              backdropFilter: 'blur(8px) saturate(1.4)'
+            }}
           >
-            <div className="text-center">
-              <Upload className="h-10 w-10 text-primary mx-auto mb-3" />
-              <p className="text-ui-base font-medium text-primary">Drop EPUB files to import</p>
-            </div>
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="text-center"
+            >
+              <motion.div
+                animate={{ y: [0, -6, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                className="w-16 h-16 rounded-2xl glass border border-sidebar-gold/30 flex items-center justify-center mx-auto mb-4"
+              >
+                <Upload className="h-7 w-7 text-sidebar-gold" />
+              </motion.div>
+              <p className="font-display text-xl italic text-foreground">Drop to add to your library</p>
+              <p className="text-ui-xs text-muted-foreground mt-1">EPUB files only</p>
+            </motion.div>
+            <div className="absolute inset-3 rounded-xl border-2 border-dashed border-sidebar-gold/40 pointer-events-none" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -193,10 +211,10 @@ export function LibraryView({
       <AnimatePresence>
         {rejectedDrop && (
           <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-red-500 text-white text-ui-sm font-medium shadow-lg"
+            initial={{ opacity: 0, y: -12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -12, scale: 0.95 }}
+            className="absolute top-4 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-lg bg-red-500/95 text-white text-ui-sm font-medium shadow-lg backdrop-blur-sm"
           >
             Only .epub files are supported
           </motion.div>
@@ -206,26 +224,29 @@ export function LibraryView({
       <div className="p-6">
         {/* Toolbar */}
         {books.length > 0 && (
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-ui-sm text-muted-foreground">
+          <div className="flex items-center justify-between mb-8">
+            <p className="font-body italic text-ui-sm text-muted-foreground">
               {books.length} {books.length === 1 ? 'book' : 'books'}
             </p>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {/* Sort dropdown */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 text-ui-xs">
-                    <ArrowUpDown className="h-3.5 w-3.5" />
+                  <button className="flex items-center gap-1.5 text-ui-sm text-muted-foreground hover:text-foreground transition-colors px-2.5 py-1.5 rounded-lg hover:bg-muted/50">
                     {SORT_OPTIONS.find((o) => o.key === sortKey)?.label}
-                  </Button>
+                    <ChevronDown className={cn(
+                      'h-3 w-3 transition-transform duration-200',
+                      sortDir === 'asc' && 'rotate-180'
+                    )} />
+                  </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {SORT_OPTIONS.map((opt) => (
                     <DropdownMenuItem key={opt.key} onClick={() => handleSort(opt.key)}>
                       {opt.label}
                       {sortKey === opt.key && (
-                        <span className="ml-auto text-ui-xs text-muted-foreground">
+                        <span className="ml-auto text-ui-sm text-primary font-medium">
                           {sortDir === 'asc' ? '\u2191' : '\u2193'}
                         </span>
                       )}
@@ -234,30 +255,29 @@ export function LibraryView({
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              {/* View mode toggle */}
-              <div className="flex border border-border rounded-md">
-                <Button
-                  variant="ghost"
-                  size="sm"
+              {/* View mode toggle — pill with sliding indicator */}
+              <div className="view-toggle">
+                <div
+                  className="view-toggle-indicator"
+                  style={{
+                    left: viewMode === 'grid' ? '2px' : '50%',
+                    right: viewMode === 'list' ? '2px' : '50%'
+                  }}
+                />
+                <button
+                  className="view-toggle-btn"
+                  data-active={viewMode === 'grid'}
                   onClick={() => setViewMode('grid')}
-                  className={cn(
-                    'px-2 rounded-r-none',
-                    viewMode === 'grid' && 'bg-accent text-accent-foreground'
-                  )}
                 >
-                  <Grid3X3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  <Grid3X3 className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  className="view-toggle-btn"
+                  data-active={viewMode === 'list'}
                   onClick={() => setViewMode('list')}
-                  className={cn(
-                    'px-2 rounded-l-none',
-                    viewMode === 'list' && 'bg-accent text-accent-foreground'
-                  )}
                 >
-                  <List className="h-4 w-4" />
-                </Button>
+                  <List className="h-3.5 w-3.5" />
+                </button>
               </div>
             </div>
           </div>
@@ -273,7 +293,11 @@ export function LibraryView({
               exit={{ opacity: 0 }}
               className="flex items-center justify-center h-40"
             >
-              <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+              />
             </motion.div>
           ) : books.length === 0 ? (
             <LibraryEmptyState onImportDialog={onImportDialog} />
@@ -340,24 +364,25 @@ function GridView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4"
+      transition={{ duration: 0.2 }}
+      className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6"
     >
       {books.map((book, i) => {
         const category = getCategoryForBook(book)
         return (
           <motion.div
             key={book.id}
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.15, delay: i * 0.03 }}
+            transition={{ duration: 0.2, delay: Math.min(i * 0.03, 0.3) }}
             className="group relative"
           >
             <button
               onClick={() => onOpenBook(book)}
               className="w-full text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg"
             >
-              <div className="aspect-[2/3] bg-gradient-to-br from-primary/10 to-primary/20 rounded-lg mb-2 flex items-center justify-center overflow-hidden shadow-sm group-hover:shadow-md transition-shadow relative">
+              {/* Book cover with 3D effect */}
+              <div className="book-cover aspect-[2/3] bg-gradient-to-br from-primary/10 to-primary/20 mb-3 flex items-center justify-center relative">
                 {book.cover_path ? (
                   <img
                     src={fileUrl(book.cover_path!)}
@@ -367,38 +392,44 @@ function GridView({
                 ) : (
                   <BookOpen className="h-8 w-8 text-primary/40" />
                 )}
-                {/* Uncategorized badge */}
-                {!book.category_id && (
-                  <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-500/80 text-white">
-                    Uncategorized
-                  </span>
-                )}
                 {/* Category badge */}
                 {category && category.id !== 'uncategorized' && (
                   <span
-                    className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded text-[10px] font-medium text-white"
-                    style={{ backgroundColor: (category.color || '#6b7280') + 'cc' }}
+                    className="absolute top-2 right-2 px-2.5 py-0.5 rounded-full text-xs font-medium text-white backdrop-blur-sm"
+                    style={{ backgroundColor: (category.color || '#6b7280') + 'bb' }}
                   >
                     {category.name}
                   </span>
                 )}
+                {/* Hover info overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-3">
+                  <div className="text-white/90">
+                    <p className="text-xs font-mono">
+                      {new Date(book.created_at).toLocaleDateString(undefined, {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                      })}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <p className="text-ui-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+              <p className="font-body font-medium text-ui-sm text-foreground truncate group-hover:text-primary transition-colors duration-300">
                 {book.title}
               </p>
               {book.author && (
-                <p className="text-ui-xs text-muted-foreground truncate">{book.author}</p>
+                <p className="text-ui-sm italic text-muted-foreground truncate">{book.author}</p>
               )}
             </button>
 
-            {/* Action buttons */}
-            <div className="absolute top-2 right-2 flex gap-1">
+            {/* Action buttons — frosted glass */}
+            <div className="absolute top-2 left-2 flex gap-1">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
                   onEditBook(book)
                 }}
-                className="p-1.5 rounded-md transition-all bg-black/50 text-white opacity-0 group-hover:opacity-100"
+                className="p-1.5 rounded-md transition-all duration-200 opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 backdrop-blur-md bg-background/80 border border-border/50 text-muted-foreground hover:text-primary"
                 title="Edit category"
               >
                 <Pencil className="h-3.5 w-3.5" />
@@ -409,10 +440,10 @@ function GridView({
                   onDeleteBook(book.id)
                 }}
                 className={cn(
-                  'p-1.5 rounded-md transition-all',
+                  'p-1.5 rounded-md transition-all duration-200',
                   confirmDelete === book.id
-                    ? 'bg-red-500 text-white opacity-100'
-                    : 'bg-black/50 text-white opacity-0 group-hover:opacity-100'
+                    ? 'bg-red-500 text-white opacity-100 scale-100'
+                    : 'opacity-0 scale-90 group-hover:opacity-100 group-hover:scale-100 backdrop-blur-md bg-background/80 border border-border/50 text-muted-foreground hover:text-destructive'
                 )}
                 title={confirmDelete === book.id ? 'Click again to confirm' : 'Delete'}
               >
@@ -448,25 +479,29 @@ function ListView({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.15 }}
-      className="space-y-1"
+      transition={{ duration: 0.2 }}
+      className="space-y-0"
     >
       {books.map((book, i) => {
         const category = getCategoryForBook(book)
         return (
           <motion.div
             key={book.id}
-            initial={{ opacity: 0, x: -8 }}
+            initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.15, delay: i * 0.02 }}
-            className="group flex items-center gap-4 p-3 rounded-lg hover:bg-accent/50 transition-colors"
+            transition={{ duration: 0.15, delay: Math.min(i * 0.02, 0.2) }}
+            className={cn(
+              'group flex items-center gap-4 p-3 rounded-lg transition-all duration-200',
+              'border-l-2 border-transparent hover:border-l-primary',
+              'hover:bg-primary/[0.02]'
+            )}
           >
             {/* Cover thumbnail */}
             <button
               onClick={() => onOpenBook(book)}
               className="flex items-center gap-4 flex-1 min-w-0 text-left focus:outline-none"
             >
-              <div className="w-10 h-14 bg-gradient-to-br from-primary/10 to-primary/20 rounded flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
+              <div className="w-10 h-14 bg-gradient-to-br from-primary/10 to-primary/20 rounded-sm flex items-center justify-center overflow-hidden shrink-0 shadow-sm">
                 {book.cover_path ? (
                   <img
                     src={fileUrl(book.cover_path!)}
@@ -480,23 +515,18 @@ function ListView({
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-ui-sm font-medium text-foreground truncate group-hover:text-primary transition-colors">
+                <p className="text-ui-sm font-medium text-foreground truncate group-hover:text-primary transition-colors duration-200">
                   {book.title}
                 </p>
                 <div className="flex items-center gap-2">
-                  <p className="text-ui-xs text-muted-foreground truncate">
+                  <p className="text-ui-sm italic text-muted-foreground truncate">
                     {book.author || 'Unknown author'}
                   </p>
                   {/* Category tag */}
-                  {!book.category_id && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 shrink-0">
-                      Uncategorized
-                    </span>
-                  )}
                   {category && category.id !== 'uncategorized' && (
                     <span
-                      className="px-1.5 py-0.5 rounded text-[10px] font-medium text-white shrink-0"
-                      style={{ backgroundColor: category.color || '#6b7280' }}
+                      className="px-2 py-0.5 rounded-full text-xs font-medium text-white shrink-0"
+                      style={{ backgroundColor: (category.color || '#6b7280') + 'cc' }}
                     >
                       {category.name}
                     </span>
@@ -505,7 +535,7 @@ function ListView({
               </div>
 
               {/* Date */}
-              <span className="text-ui-xs text-muted-foreground shrink-0 hidden sm:block">
+              <span className="text-xs font-mono text-muted-foreground shrink-0 hidden sm:block tabular-nums">
                 {new Date(book.created_at).toLocaleDateString(undefined, {
                   month: 'short',
                   day: 'numeric',
@@ -612,21 +642,35 @@ function LibraryEmptyState({ onImportDialog }: { onImportDialog: () => void }): 
   return (
     <motion.div
       key="empty"
-      initial={{ opacity: 0, y: 8 }}
+      initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
-      transition={{ duration: 0.2 }}
+      transition={{ duration: 0.3 }}
       className="flex flex-col items-center justify-center py-20 text-center"
     >
-      <BookOpen className="h-12 w-12 text-muted-foreground/40 mb-4" />
-      <p className="text-ui-lg text-foreground mb-2">Your library is empty</p>
-      <p className="text-ui-sm text-muted-foreground mb-6">
+      <div className="w-16 h-16 rounded-2xl bg-primary/[0.06] border border-primary/10 flex items-center justify-center mb-5">
+        <BookOpen className="h-7 w-7 text-primary/30" />
+      </div>
+      <h2 className="font-display text-2xl text-foreground mb-2">Your library is empty</h2>
+      <p className="text-ui-sm text-muted-foreground mb-8 max-w-xs">
         Import an EPUB file or drag and drop to get started
       </p>
-      <Button onClick={onImportDialog} className="gap-2">
-        <FilePlus className="h-4 w-4" />
-        Import EPUB
-      </Button>
+      {/* Import zone */}
+      <button
+        onClick={onImportDialog}
+        className={cn(
+          'flex flex-col items-center gap-3 px-12 py-8 rounded-xl',
+          'border-2 border-dashed border-sidebar-gold/30',
+          'hover:border-sidebar-gold/60 hover:bg-sidebar-gold/[0.04]',
+          'hover:shadow-[0_4px_20px_-4px_hsla(var(--gold),0.10)]',
+          'transition-all duration-300 group'
+        )}
+      >
+        <div className="w-10 h-10 rounded-xl bg-sidebar-gold/10 flex items-center justify-center group-hover:bg-sidebar-gold/15 transition-colors">
+          <FilePlus className="h-5 w-5 text-sidebar-gold group-hover:scale-110 transition-transform duration-300" />
+        </div>
+        <span className="font-body text-ui-sm font-medium text-sidebar-gold">Import EPUB</span>
+      </button>
     </motion.div>
   )
 }

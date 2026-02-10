@@ -36,7 +36,7 @@ export function WrapUpScreen({
 
   if (loading || !data) {
     return (
-      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm">
+      <div className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 backdrop-blur-sm">
         <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     )
@@ -45,17 +45,25 @@ export function WrapUpScreen({
   const { snapshot, topHighlights } = data
 
   return (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm overflow-y-auto">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-background/95 backdrop-blur-sm overflow-y-auto">
       <div className="max-w-lg w-full mx-4 py-12">
-        {/* Header */}
+        {/* Header with celebration */}
         <div className="text-center mb-8">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-            <CheckCircle className="w-8 h-8 text-emerald-500" />
+          <div className="relative mx-auto mb-5 w-16 h-16">
+            {/* Glow behind icon */}
+            <div className="absolute inset-0 rounded-full"
+              style={{ background: 'radial-gradient(circle, hsla(var(--primary), 0.15) 0%, transparent 70%)' }}
+            />
+            <div className="relative w-16 h-16 rounded-xl flex items-center justify-center"
+              style={{ background: 'linear-gradient(135deg, hsla(var(--primary), 0.1) 0%, hsla(var(--gold), 0.08) 100%)' }}
+            >
+              <CheckCircle className="w-8 h-8 text-primary" />
+            </div>
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-1">
+          <h2 className="font-display text-2xl italic text-foreground mb-1">
             Session Complete
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-ui-sm text-muted-foreground">
             Great reading session! Here&apos;s your summary.
           </p>
         </div>
@@ -66,33 +74,28 @@ export function WrapUpScreen({
             icon={Clock}
             label="Active Time"
             value={formatDuration(snapshot.activeMs)}
-            color="text-blue-500"
-            bg="bg-blue-50 dark:bg-blue-950/30"
+            accent
           />
           <StatCard
             icon={Highlighter}
             label="Highlights"
             value={String(snapshot.highlightsDuring)}
-            color="text-amber-500"
-            bg="bg-amber-50 dark:bg-amber-950/30"
           />
           <StatCard
             icon={StickyNote}
             label="Notes"
             value={String(snapshot.notesDuring)}
-            color="text-purple-500"
-            bg="bg-purple-50 dark:bg-purple-950/30"
           />
         </div>
 
         {/* Pomodoro stats */}
         {snapshot.pomodoroEnabled && snapshot.completedPomodoros > 0 && (
-          <div className="mb-8 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
-            <div className="flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
-              <span className="font-medium">
+          <div className="mb-8 p-4 rounded-xl bg-primary/[0.04] border border-primary/15">
+            <div className="flex items-center gap-2 text-ui-sm">
+              <span className="font-medium text-foreground">
                 {snapshot.completedPomodoros} Pomodoro{snapshot.completedPomodoros !== 1 ? 's' : ''} completed
               </span>
-              <span className="text-emerald-500/60">
+              <span className="text-muted-foreground font-mono text-ui-xs">
                 ({snapshot.workMinutes}min work / {snapshot.breakMinutes}min break)
               </span>
             </div>
@@ -102,7 +105,7 @@ export function WrapUpScreen({
         {/* Top highlights */}
         {topHighlights.length > 0 && (
           <div className="mb-8">
-            <h3 className="text-sm font-medium text-foreground mb-3">
+            <h3 className="text-ui-sm font-medium text-foreground mb-3">
               Top Highlights
             </h3>
             <div className="space-y-2">
@@ -110,17 +113,17 @@ export function WrapUpScreen({
                 <button
                   key={highlight.id}
                   onClick={() => onNavigateToHighlight?.(highlight.cfi_range)}
-                  className="w-full text-left p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 transition-colors group"
+                  className="w-full text-left p-3 rounded-xl bg-card border border-border hover:border-primary/20 hover:shadow-[0_4px_16px_-4px_hsla(var(--primary),0.08)] transition-all duration-300 group"
                 >
-                  <div className="flex items-start gap-2">
+                  <div className="flex items-start gap-2.5">
                     <div
                       className="w-1 self-stretch rounded-full shrink-0 mt-0.5"
                       style={{ backgroundColor: highlight.color }}
                     />
-                    <p className="text-sm text-foreground line-clamp-2 flex-1">
+                    <p className="text-ui-sm text-foreground line-clamp-2 flex-1 leading-relaxed">
                       {highlight.text}
                     </p>
-                    <ArrowRight className="w-4 h-4 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+                    <ArrowRight className="w-3.5 h-3.5 text-muted-foreground opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-200 shrink-0 mt-0.5" />
                   </div>
                 </button>
               ))}
@@ -133,13 +136,13 @@ export function WrapUpScreen({
           <Button
             variant="outline"
             onClick={onFinish}
-            className="flex-1"
+            className="flex-1 btn-press"
           >
             Finish
           </Button>
           <Button
             onClick={onContinue}
-            className="flex-1 gap-2"
+            className="flex-1 gap-2 btn-press"
           >
             <BookOpen className="w-4 h-4" />
             Continue Reading
@@ -154,20 +157,22 @@ function StatCard({
   icon: Icon,
   label,
   value,
-  color,
-  bg
+  accent
 }: {
   icon: typeof Clock
   label: string
   value: string
-  color: string
-  bg: string
+  accent?: boolean
 }) {
   return (
-    <div className={`p-4 rounded-lg ${bg} text-center`}>
-      <Icon className={`w-5 h-5 mx-auto mb-2 ${color}`} />
-      <p className="text-xl font-bold text-foreground">{value}</p>
-      <p className="text-xs text-muted-foreground">{label}</p>
+    <div className={`p-4 rounded-xl border text-center transition-all duration-300 hover:-translate-y-0.5 ${
+      accent
+        ? 'bg-primary/[0.04] border-primary/15 hover:shadow-[0_4px_20px_-4px_hsla(var(--primary),0.12)]'
+        : 'bg-card border-border hover:shadow-[0_4px_16px_-4px_hsla(var(--primary),0.08)]'
+    }`}>
+      <Icon className={`w-4.5 h-4.5 mx-auto mb-2 ${accent ? 'text-primary' : 'text-gold'}`} />
+      <p className="text-xl font-mono font-bold text-foreground tabular-nums">{value}</p>
+      <p className="text-ui-xs text-muted-foreground mt-0.5">{label}</p>
     </div>
   )
 }

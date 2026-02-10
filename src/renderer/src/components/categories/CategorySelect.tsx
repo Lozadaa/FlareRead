@@ -71,18 +71,22 @@ export function CategorySelect({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className={cn('justify-between font-normal', className)}
+          className={cn(
+            'justify-between font-normal transition-all duration-200',
+            'hover:border-primary/30 hover:shadow-[0_2px_8px_-2px_hsla(var(--primary),0.08)]',
+            className
+          )}
         >
           <span className="flex items-center gap-2 truncate">
             {selectedCategory ? (
               <>
                 {selectedCategory.color && (
                   <span
-                    className="w-3 h-3 rounded-full shrink-0"
+                    className="w-3 h-3 rounded-full shrink-0 ring-1 ring-black/5"
                     style={{ backgroundColor: selectedCategory.color }}
                   />
                 )}
-                {selectedCategory.name}
+                <span className="text-foreground">{selectedCategory.name}</span>
               </>
             ) : (
               <span className="text-muted-foreground">{placeholder}</span>
@@ -93,8 +97,8 @@ export function CategorySelect({
       </PopoverTrigger>
       <PopoverContent className="w-[280px] p-0" align="start">
         {creating ? (
-          <div className="p-3 space-y-3">
-            <p className="text-ui-sm font-medium">New category</p>
+          <div className="p-4 space-y-3">
+            <p className="text-ui-sm font-medium text-foreground">New category</p>
             <Input
               placeholder="Category name"
               value={newName}
@@ -104,21 +108,29 @@ export function CategorySelect({
                 if (e.key === 'Escape') setCreating(false)
               }}
               autoFocus
+              className="focus:border-primary/40"
             />
-            <div className="flex gap-1.5 flex-wrap">
-              {PRESET_COLORS.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setNewColor(color)}
-                  className={cn(
-                    'w-6 h-6 rounded-full transition-all',
-                    newColor === color && 'ring-2 ring-offset-2 ring-primary'
-                  )}
-                  style={{ backgroundColor: color }}
-                />
-              ))}
+            {/* Color swatches with larger hit targets */}
+            <div>
+              <p className="text-xs uppercase tracking-wider text-muted-foreground mb-2">Color</p>
+              <div className="flex gap-2 flex-wrap">
+                {PRESET_COLORS.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setNewColor(color)}
+                    className={cn(
+                      'w-7 h-7 rounded-lg transition-all duration-200',
+                      'hover:scale-110',
+                      newColor === color
+                        ? 'ring-2 ring-offset-2 ring-offset-popover ring-primary scale-110'
+                        : 'ring-1 ring-black/10'
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div className="flex gap-2 justify-end pt-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -150,25 +162,30 @@ export function CategorySelect({
                         onChange(category.id === value ? null : category.id)
                         setOpen(false)
                       }}
+                      className="gap-2"
                     >
-                      <span className="flex items-center gap-2 flex-1">
+                      <span className="flex items-center gap-2.5 flex-1">
                         {category.color && (
                           <span
-                            className="w-3 h-3 rounded-full shrink-0"
+                            className="w-3 h-3 rounded-full shrink-0 ring-1 ring-black/5"
                             style={{ backgroundColor: category.color }}
                           />
                         )}
-                        {category.name}
+                        <span className="text-ui-sm">{category.name}</span>
                       </span>
-                      {value === category.id && <Check className="h-4 w-4 shrink-0" />}
+                      {value === category.id && (
+                        <Check className="h-4 w-4 shrink-0 text-primary" />
+                      )}
                     </CommandItem>
                   ))}
               </CommandGroup>
               <CommandSeparator />
               <CommandGroup>
-                <CommandItem onSelect={() => setCreating(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create new category
+                <CommandItem onSelect={() => setCreating(true)} className="gap-2">
+                  <div className="w-5 h-5 rounded-md bg-primary/10 flex items-center justify-center">
+                    <Plus className="h-3 w-3 text-primary" />
+                  </div>
+                  <span className="text-ui-sm">Create new category</span>
                 </CommandItem>
               </CommandGroup>
             </CommandList>
