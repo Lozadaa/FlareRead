@@ -70,6 +70,7 @@
       "out/**/*"
     ],
     "win": {
+      "icon": "build/icon.ico",
       "target": [
         {
           "target": "nsis",
@@ -87,9 +88,13 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "FlareRead"
+      "shortcutName": "FlareRead",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "mac": {
+      "icon": "build/icon.icns",
       "target": [
         {
           "target": "dmg",
@@ -104,6 +109,7 @@
       "category": "public.app-category.education"
     },
     "linux": {
+      "icon": "build/icon.png",
       "target": [
         {
           "target": "AppImage",
