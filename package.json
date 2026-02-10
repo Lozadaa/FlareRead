@@ -7,7 +7,14 @@
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
-    "prebuild": "electron-vite build"
+    "prebuild": "electron-vite build",
+    "package": "npm run build && electron-builder",
+    "package:win": "npm run build && electron-builder --win",
+    "package:mac": "npm run build && electron-builder --mac",
+    "package:linux": "npm run build && electron-builder --linux",
+    "package:all": "npm run build && electron-builder --win --mac --linux",
+    "release:win": "npm run package:win && gh release create v%npm_package_version% dist/*.exe dist/*.yml --title \"JustRead v%npm_package_version%\" --generate-notes",
+    "release": "npm run package:all && gh release create v%npm_package_version% dist/*.* --title \"JustRead v%npm_package_version%\" --generate-notes"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -57,6 +64,60 @@
     },
     "files": [
       "out/**/*"
-    ]
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        },
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "JustRead-${type}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JustRead",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        },
+        {
+          "target": "zip",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "artifactName": "JustRead-${type}.${ext}",
+      "category": "public.app-category.education"
+    },
+    "linux": {
+      "icon": "build/icon.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "artifactName": "JustRead-${type}.${ext}",
+      "category": "Education"
+    }
   }
 }
