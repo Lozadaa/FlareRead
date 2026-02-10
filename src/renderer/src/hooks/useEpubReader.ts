@@ -225,14 +225,12 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
         margin-top: 1.2em !important;
       }
 
-      /* Small headings — body font, uppercase treatment */
+      /* Small headings — body font */
       h5 {
         font-family: ${s.fontFamily} !important;
         font-size: ${s.fontSize * 0.88}px !important;
         font-weight: 600 !important;
         margin-top: 1em !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.12em !important;
       }
 
       h6 {
@@ -240,8 +238,6 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
         font-size: ${s.fontSize * 0.82}px !important;
         font-weight: 600 !important;
         margin-top: 1em !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.12em !important;
         color: ${mutedFg} !important;
       }
 
