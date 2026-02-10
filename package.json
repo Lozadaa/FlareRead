@@ -1,7 +1,7 @@
 {
-  "name": "justread",
+  "name": "flareread",
   "version": "1.1.0",
-  "description": "JustRead - A reading application built with Electron",
+  "description": "FlareRead - A reading application built with Electron",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -13,8 +13,8 @@
     "package:mac": "npm run build && electron-builder --mac",
     "package:linux": "npm run build && electron-builder --linux",
     "package:all": "npm run build && electron-builder --win --mac --linux",
-    "release:win": "npm run package:win && gh release create v%npm_package_version% dist/*.exe dist/*.yml --title \"JustRead v%npm_package_version%\" --generate-notes",
-    "release": "npm run package:all && gh release create v%npm_package_version% dist/*.* --title \"JustRead v%npm_package_version%\" --generate-notes"
+    "release:win": "npm run package:win && gh release create v%npm_package_version% dist/*.exe dist/*.yml --title \"FlareRead v%npm_package_version%\" --generate-notes",
+    "release": "npm run package:all && gh release create v%npm_package_version% dist/*.* --title \"FlareRead v%npm_package_version%\" --generate-notes"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -57,8 +57,8 @@
     "vite": "^5.4.11"
   },
   "build": {
-    "appId": "com.justread.app",
-    "productName": "JustRead",
+    "appId": "com.flareread.app",
+    "productName": "FlareRead",
     "directories": {
       "output": "dist"
     },
@@ -77,14 +77,14 @@
           "arch": ["x64"]
         }
       ],
-      "artifactName": "JustRead-${type}.${ext}"
+      "artifactName": "FlareRead-${type}.${ext}"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "JustRead",
+      "shortcutName": "FlareRead",
       "installerIcon": "build/icon.ico",
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico"
@@ -101,7 +101,7 @@
           "arch": ["x64", "arm64"]
         }
       ],
-      "artifactName": "JustRead-${type}.${ext}",
+      "artifactName": "FlareRead-${type}.${ext}",
       "category": "public.app-category.education"
     },
     "linux": {
@@ -116,7 +116,7 @@
           "arch": ["x64"]
         }
       ],
-      "artifactName": "JustRead-${type}.${ext}",
+      "artifactName": "FlareRead-${type}.${ext}",
       "category": "Education"
     }
   }

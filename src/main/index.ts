@@ -148,7 +148,7 @@ function buildMenu(mainWindow: BrowserWindow): void {
       label: 'Help',
       submenu: [
         {
-          label: 'About JustRead',
+          label: 'About FlareRead',
           click: (): void => send('menu:about')
         },
         {
@@ -365,7 +365,7 @@ app.whenReady().then(() => {
         }
       }
 
-      md += `---\n*Exported from JustRead on ${new Date().toLocaleDateString()}*\n`
+      md += `---\n*Exported from FlareRead on ${new Date().toLocaleDateString()}*\n`
 
       const safeTitle = book.title.replace(/[<>:"/\\|?*]/g, '_')
       const result = await dialog.showSaveDialog(mainWindow, {

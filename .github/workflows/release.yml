@@ -156,7 +156,7 @@ jobs:
             artifacts/macos/*.zip \
             artifacts/linux/*.AppImage \
             artifacts/linux/*.deb \
-            --title "JustRead v${{ inputs.version }}" \
+            --title "FlareRead v${{ inputs.version }}" \
             --generate-notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

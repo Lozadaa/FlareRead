@@ -259,7 +259,7 @@ function WelcomeStep({ choices, updateChoice, applyTheme }: {
           <BookOpen className="h-5.5 w-5.5 text-primary" />
         </div>
         <div>
-          <h2 className="text-ui-xl font-semibold text-foreground">Welcome to JustRead</h2>
+          <h2 className="text-ui-xl font-semibold text-foreground">Welcome to FlareRead</h2>
           <p className="text-ui-sm text-muted-foreground/70">Let's set up your reading environment</p>
         </div>
       </div>

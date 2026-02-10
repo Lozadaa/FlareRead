@@ -219,7 +219,7 @@ function App(): JSX.Element {
         }
       }),
       window.appApi.onMenuAbout(() => {
-        addToast('JustRead — A focused e-book reader', 'success')
+        addToast('FlareRead — A focused e-book reader', 'success')
       }),
       window.appApi.onMenuKeyboardShortcuts(() => {
         setShowShortcutsDialog(true)

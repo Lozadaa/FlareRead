@@ -97,7 +97,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
 
     return `
       /* ═══════════════════════════════════════════════════
-         JustRead — Premium Reading Typography
+         FlareRead — Premium Reading Typography
          ═══════════════════════════════════════════════════ */
 
       /* === Base — Optimized text rendering === */
@@ -560,18 +560,18 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
   // Inject a <style> tag and Google Fonts <link> into an epub iframe document
   const injectThemeCss = useCallback((doc: Document, css: string) => {
     // Inject Google Fonts for premium heading & body typography
-    if (!doc.getElementById('justread-fonts')) {
+    if (!doc.getElementById('flareread-fonts')) {
       const link = doc.createElement('link')
-      link.id = 'justread-fonts'
+      link.id = 'flareread-fonts'
       link.rel = 'stylesheet'
       link.href = READING_FONTS_URL
       doc.head.appendChild(link)
     }
 
-    let el = doc.getElementById('justread-theme')
+    let el = doc.getElementById('flareread-theme')
     if (!el) {
       el = doc.createElement('style')
-      el.id = 'justread-theme'
+      el.id = 'flareread-theme'
       doc.head.appendChild(el)
     }
     el.textContent = css

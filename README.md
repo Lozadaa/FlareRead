@@ -1,8 +1,8 @@
-# JustRead
+# FlareRead
 
 A desktop EPUB reader for focused study and reading, built with Electron, React, and TypeScript.
 
-JustRead combines a distraction-free reading experience with productivity tools like study sessions, learning tracks, and ambient soundscapes to help you stay focused and retain more from your reading.
+FlareRead combines a distraction-free reading experience with productivity tools like study sessions, learning tracks, and ambient soundscapes to help you stay focused and retain more from your reading.
 
 ---
 
@@ -39,8 +39,8 @@ JustRead combines a distraction-free reading experience with productivity tools 
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/justread.git
-cd justread
+git clone https://github.com/your-username/flareread.git
+cd flareread
 
 # Install dependencies
 npm install
@@ -133,7 +133,7 @@ src/
 
 ## Architecture
 
-JustRead follows a strict multi-process architecture with security boundaries enforced at the IPC layer.
+FlareRead follows a strict multi-process architecture with security boundaries enforced at the IPC layer.
 
 ### Process Model
 
@@ -190,7 +190,7 @@ All IPC calls use `ipcRenderer.invoke()` for async request/response patterns and
 
 ## Security
 
-JustRead follows Electron security best practices to minimize the attack surface of the renderer process.
+FlareRead follows Electron security best practices to minimize the attack surface of the renderer process.
 
 - **`nodeIntegration: false`** -- The renderer process has no direct access to Node.js APIs, preventing arbitrary file system or process access from frontend code.
 - **`contextIsolation: true`** -- The renderer's JavaScript context is fully isolated from the preload script, ensuring that exposed APIs cannot be tampered with by third-party content.

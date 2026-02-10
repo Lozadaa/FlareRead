@@ -61,7 +61,7 @@ export function KeyboardShortcutsDialog({ onClose }: KeyboardShortcutsDialogProp
           </div>
           <div className="flex-1">
             <h2 className="text-ui-lg font-semibold text-foreground">Keyboard Shortcuts</h2>
-            <p className="text-ui-xs text-muted-foreground">Quick actions to navigate JustRead</p>
+            <p className="text-ui-xs text-muted-foreground">Quick actions to navigate FlareRead</p>
           </div>
           <button
             onClick={onClose}

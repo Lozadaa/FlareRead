@@ -16,7 +16,7 @@ export function getDatabase(): Database.Database {
 export function initDatabase(): Database.Database {
   if (db) return db
 
-  const dbPath = join(app.getPath('userData'), 'justread.db')
+  const dbPath = join(app.getPath('userData'), 'flareread.db')
   console.log('Database path:', dbPath)
 
   db = new Database(dbPath)

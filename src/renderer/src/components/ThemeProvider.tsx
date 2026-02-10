@@ -22,7 +22,7 @@ function resolveTheme(mode: ThemeMode): ResolvedTheme {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }): JSX.Element {
   const [theme, setThemeState] = useState<ThemeMode>(() => {
-    const stored = localStorage.getItem('justread-theme') as ThemeMode | null
+    const stored = localStorage.getItem('flareread-theme') as ThemeMode | null
     return stored ?? 'light'
   })
   const [resolved, setResolved] = useState<ResolvedTheme>(() => resolveTheme(theme))
@@ -34,7 +34,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }): JSX.
     const root = document.documentElement
     root.classList.remove('light', 'dark')
     root.classList.add(apply)
-    localStorage.setItem('justread-theme', theme)
+    localStorage.setItem('flareread-theme', theme)
     // Also persist to SQLite for cross-window consistency
     window.api?.settings.set('appearance:theme', theme)
   }, [theme])

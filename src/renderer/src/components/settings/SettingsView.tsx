@@ -241,7 +241,7 @@ function AppearanceSection({ settings, onSetSetting }: {
 
   return (
     <>
-      <SettingGroup title="Appearance" description="Customize the look and feel of JustRead">
+      <SettingGroup title="Appearance" description="Customize the look and feel of FlareRead">
         {/* Theme */}
         <SettingRow label="Theme" description="Choose your preferred color scheme">
           <div className="flex gap-1 p-0.5 rounded-lg bg-muted/50">

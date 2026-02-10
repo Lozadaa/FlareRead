@@ -46,7 +46,7 @@ interface RecentCommand {
   timestamp: number
 }
 
-const RECENT_COMMANDS_KEY = 'justread-recent-commands'
+const RECENT_COMMANDS_KEY = 'flareread-recent-commands'
 const MAX_RECENT = 5
 
 // ─── Component ───────────────────────────────────────
