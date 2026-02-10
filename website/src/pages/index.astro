@@ -133,48 +133,113 @@
         <p class="section-eyebrow">&mdash; Features</p>
         <h2 class="section-title">Everything you need,<br/><em>nothing you don't.</em></h2>
       </div>
-      <div class="features-grid">
-        <div class="feature-card reveal">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <div class="bento">
+        <!-- HERO CARD: Reading (spans 2 cols) -->
+        <div class="bento-card bento-wide reveal">
+          <div class="bento-text">
+            <span class="bento-tag">Reading</span>
+            <h3>Your book, your way</h3>
+            <p>Paginated or scroll. Adjust fonts, line height, content width. Enter focus mode and let everything else disappear.</p>
           </div>
-          <h3>Distraction-free reading</h3>
-          <p>Choose paginated or scroll mode. Adjust fonts, spacing, and content width. Enter focus mode for total immersion.</p>
+          <div class="bento-visual bento-reader-vis">
+            <div class="vis-page">
+              <div class="vis-line" style="width:90%"></div>
+              <div class="vis-line" style="width:100%"></div>
+              <div class="vis-line vis-hl" style="width:70%"></div>
+              <div class="vis-line" style="width:100%"></div>
+              <div class="vis-line" style="width:85%"></div>
+              <div class="vis-line" style="width:100%"></div>
+              <div class="vis-line" style="width:55%"></div>
+            </div>
+            <div class="vis-controls">
+              <span class="vis-ctrl-dot"></span>
+              <span class="vis-ctrl-bar"></span>
+              <span class="vis-ctrl-dot"></span>
+            </div>
+          </div>
         </div>
-        <div class="feature-card reveal reveal-delay-1">
-          <div class="feature-icon icon-warm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+
+        <!-- TALL CARD: Pomodoro timer -->
+        <div class="bento-card bento-tall reveal reveal-delay-1">
+          <div class="bento-timer-vis">
+            <svg class="timer-ring" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border)" stroke-width="4"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="url(#timer-grad)" stroke-width="4" stroke-linecap="round" stroke-dasharray="198 264" transform="rotate(-90 50 50)"/>
+              <defs><linearGradient id="timer-grad" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="var(--primary)"/><stop offset="100%" stop-color="var(--gold)"/></linearGradient></defs>
+            </svg>
+            <div class="timer-inner">
+              <span class="timer-time">18:42</span>
+              <span class="timer-label">focus</span>
+            </div>
           </div>
-          <h3>Study sessions</h3>
-          <p>Built-in Pomodoro timer with smart breaks, AFK detection, microbreak reminders, and session wrap-up summaries.</p>
+          <span class="bento-tag tag-warm">Sessions</span>
+          <h3>Pomodoro &<br/>smart breaks</h3>
+          <p>AFK detection, microbreak reminders, and a wrap-up summary after every session.</p>
         </div>
-        <div class="feature-card reveal reveal-delay-2">
-          <div class="feature-icon icon-gold">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
+
+        <!-- STANDARD: Highlights -->
+        <div class="bento-card reveal">
+          <span class="bento-tag tag-gold">Annotations</span>
           <h3>Highlights & Notes</h3>
-          <p>Color-coded highlights with inline notes. Organize by chapter, search across books, and export everything to Markdown.</p>
-        </div>
-        <div class="feature-card reveal">
-          <div class="feature-icon icon-green">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <p>Five colors. Inline notes. Export to Markdown with one click.</p>
+          <div class="bento-hl-chips">
+            <span class="hl-chip" style="--c:#fef08a"></span>
+            <span class="hl-chip" style="--c:#bbf7d0"></span>
+            <span class="hl-chip" style="--c:#bfdbfe"></span>
+            <span class="hl-chip" style="--c:#fbcfe8"></span>
+            <span class="hl-chip" style="--c:#fed7aa"></span>
           </div>
-          <h3>Reading goals</h3>
-          <p>Set learning tracks with hour targets and deadlines. Track progress across categories with visual dashboards.</p>
         </div>
-        <div class="feature-card reveal reveal-delay-1">
-          <div class="feature-icon icon-blue">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+
+        <!-- STANDARD: Goals -->
+        <div class="bento-card reveal reveal-delay-1">
+          <span class="bento-tag tag-green">Goals</span>
+          <h3>Learning tracks</h3>
+          <p>Set hour targets and deadlines. Track progress across categories.</p>
+          <div class="bento-bars">
+            <div class="bento-bar"><div class="bar-fill" style="width:78%"></div><span>Design</span></div>
+            <div class="bento-bar"><div class="bar-fill bar-gold" style="width:45%"></div><span>History</span></div>
+            <div class="bento-bar"><div class="bar-fill bar-muted" style="width:92%"></div><span>Fiction</span></div>
           </div>
-          <h3>Ambient soundscapes</h3>
-          <p>Rain, fireplace, coffee shop, and more. Layer sounds to create the perfect reading atmosphere.</p>
         </div>
-        <div class="feature-card reveal reveal-delay-2">
-          <div class="feature-icon icon-purple">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+
+        <!-- WIDE BOTTOM: Soundscapes + Themes -->
+        <div class="bento-card bento-split reveal reveal-delay-2">
+          <div class="bento-split-item">
+            <div class="bento-sound-waves">
+              <span style="--h:40%"></span>
+              <span style="--h:65%"></span>
+              <span style="--h:45%"></span>
+              <span style="--h:80%"></span>
+              <span style="--h:55%"></span>
+              <span style="--h:70%"></span>
+              <span style="--h:35%"></span>
+              <span style="--h:60%"></span>
+              <span style="--h:50%"></span>
+              <span style="--h:75%"></span>
+              <span style="--h:40%"></span>
+              <span style="--h:55%"></span>
+            </div>
+            <span class="bento-tag tag-blue">Soundscapes</span>
+            <h3>Ambient audio</h3>
+            <p>Rain, fireplace, coffee shop. Layer sounds for your perfect atmosphere.</p>
           </div>
-          <h3>Dark & Light themes</h3>
-          <p>Warm, paper-like light mode and a gentle dark mode that's easy on the eyes during late-night sessions.</p>
+          <div class="bento-split-divider"></div>
+          <div class="bento-split-item">
+            <div class="bento-theme-toggle">
+              <div class="theme-swatch swatch-light">
+                <span class="sw-circle"></span>
+                <span class="sw-lines"><span></span><span></span></span>
+              </div>
+              <div class="theme-swatch swatch-dark">
+                <span class="sw-circle"></span>
+                <span class="sw-lines"><span></span><span></span></span>
+              </div>
+            </div>
+            <span class="bento-tag tag-purple">Themes</span>
+            <h3>Light & Dark</h3>
+            <p>Paper-warm light mode. Gentle charcoal dark mode. Follows your system preference.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -867,70 +932,328 @@
   .book-lines span:nth-child(2) { width: 60%; }
   .book-lines span:nth-child(3) { width: 45%; }
 
-  /* ═══════════════════ FEATURES ═══════════════════ */
+  /* ═══════════════════ BENTO FEATURES ═══════════════════ */
   #features {
     padding: 6rem 0;
   }
-  .features-grid {
+
+  .bento {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.25rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
   }
-  .feature-card {
+
+  .bento-card {
     background: var(--card);
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-lg);
+    border-radius: var(--radius-xl);
     padding: 1.75rem;
     transition: all var(--transition-base);
     position: relative;
     overflow: hidden;
   }
-  .feature-card::after {
+  .bento-card:hover {
+    border-color: var(--border);
+    box-shadow: 0 8px 28px -6px hsla(var(--shadow-color), 0.1);
+  }
+  .bento-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0.5rem 0 0.4rem;
+    color: var(--fg);
+    line-height: 1.25;
+  }
+  .bento-card p {
+    font-size: 0.8125rem;
+    color: var(--fg-muted);
+    line-height: 1.55;
+  }
+
+  .bento-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.2rem 0.55rem;
+    border-radius: 9999px;
+    background: hsla(30, 60%, 42%, 0.08);
+    color: var(--primary);
+  }
+  .tag-warm { background: hsla(15, 60%, 50%, 0.08); color: hsl(15, 60%, 50%); }
+  .tag-gold { background: hsla(38, 80%, 55%, 0.1); color: var(--gold); }
+  .tag-green { background: hsla(160, 50%, 40%, 0.08); color: hsl(160, 50%, 40%); }
+  .tag-blue { background: hsla(220, 50%, 50%, 0.08); color: hsl(220, 50%, 50%); }
+  .tag-purple { background: hsla(270, 45%, 55%, 0.08); color: hsl(270, 45%, 55%); }
+
+  /* ─── Wide card (reading) — spans 2 cols ─────── */
+  .bento-wide {
+    grid-column: span 2;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+  }
+  .bento-wide .bento-text { flex: 1; }
+  .bento-wide h3 { font-size: 1.4rem; }
+
+  .bento-reader-vis {
+    width: 200px;
+    flex-shrink: 0;
+    background: var(--muted-bg);
+    border-radius: var(--radius);
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .vis-page {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  .vis-line {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .vis-hl {
+    background: linear-gradient(to right, hsl(48, 95%, 76%), hsl(48, 95%, 82%));
+  }
+  .vis-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 0.25rem;
+  }
+  .vis-ctrl-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+  }
+  .vis-ctrl-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .vis-ctrl-bar::after {
     content: '';
     position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity var(--transition-base);
-    background: linear-gradient(135deg, hsla(38, 80%, 55%, 0) 0%, hsla(38, 80%, 55%, 0.04) 100%);
-    pointer-events: none;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 45%;
+    border-radius: 2px;
+    background: linear-gradient(to right, var(--primary), var(--gold));
   }
-  .feature-card:hover {
-    border-color: var(--border);
-    box-shadow: 0 8px 24px -4px hsla(var(--shadow-color), 0.08);
-    transform: translateY(-2px);
-  }
-  .feature-card:hover::after { opacity: 1; }
 
-  .feature-icon {
-    width: 44px;
-    height: 44px;
+  /* ─── Tall card (timer) — spans 2 rows ─────── */
+  .bento-tall {
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+  }
+  .bento-timer-vis {
+    position: relative;
+    width: 130px;
+    height: 130px;
+    margin-bottom: 1.25rem;
+  }
+  .timer-ring {
+    width: 100%;
+    height: 100%;
+  }
+  .timer-ring circle:last-of-type {
+    animation: timer-progress 3s ease-in-out infinite alternate;
+  }
+  @keyframes timer-progress {
+    from { stroke-dasharray: 198 264; }
+    to { stroke-dasharray: 230 264; }
+  }
+  .timer-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .timer-time {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--fg);
+    letter-spacing: -0.02em;
+  }
+  .timer-label {
+    font-family: var(--font-body);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  /* ─── Highlight chips ────────────────────────── */
+  .bento-hl-chips {
+    display: flex;
+    gap: 6px;
+    margin-top: 1rem;
+  }
+  .hl-chip {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--c);
+    border: 2px solid var(--card);
+    box-shadow: 0 1px 3px hsla(var(--shadow-color), 0.1);
+    transition: transform var(--transition-spring);
+    cursor: pointer;
+  }
+  .hl-chip:hover {
+    transform: scale(1.25);
+  }
+
+  /* ─── Goal bars ──────────────────────────────── */
+  .bento-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 1rem;
+  }
+  .bento-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .bento-bar .bar-fill {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--primary), var(--gold));
+    flex: 1;
+    max-width: var(--w, 100%);
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .bento-bar .bar-gold {
+    background: linear-gradient(to right, var(--gold), hsl(45, 80%, 65%));
+  }
+  .bento-bar .bar-muted {
+    background: linear-gradient(to right, var(--fg-muted), var(--primary));
+  }
+  .bento-bar span {
+    font-size: 0.65rem;
+    font-family: var(--font-mono);
+    color: var(--fg-muted);
+    width: 48px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  /* ─── Split card (sound + themes) — spans 3 cols ─── */
+  .bento-split {
+    grid-column: span 3;
+    display: flex;
+    gap: 0;
+    padding: 0;
+  }
+  .bento-split-item {
+    flex: 1;
+    padding: 1.75rem;
+  }
+  .bento-split-divider {
+    width: 1px;
+    background: var(--border-subtle);
+    margin: 1.25rem 0;
+  }
+
+  /* Sound waves animation */
+  .bento-sound-waves {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 36px;
+    margin-bottom: 1rem;
+  }
+  .bento-sound-waves span {
+    width: 4px;
+    height: var(--h, 50%);
+    background: linear-gradient(to top, var(--primary), var(--gold));
+    border-radius: 2px;
+    animation: wave 1.2s ease-in-out infinite alternate;
+    opacity: 0.7;
+  }
+  .bento-sound-waves span:nth-child(2) { animation-delay: 0.1s; }
+  .bento-sound-waves span:nth-child(3) { animation-delay: 0.2s; }
+  .bento-sound-waves span:nth-child(4) { animation-delay: 0.3s; }
+  .bento-sound-waves span:nth-child(5) { animation-delay: 0.15s; }
+  .bento-sound-waves span:nth-child(6) { animation-delay: 0.25s; }
+  .bento-sound-waves span:nth-child(7) { animation-delay: 0.35s; }
+  .bento-sound-waves span:nth-child(8) { animation-delay: 0.05s; }
+  .bento-sound-waves span:nth-child(9) { animation-delay: 0.2s; }
+  .bento-sound-waves span:nth-child(10) { animation-delay: 0.3s; }
+  .bento-sound-waves span:nth-child(11) { animation-delay: 0.1s; }
+  .bento-sound-waves span:nth-child(12) { animation-delay: 0.25s; }
+  @keyframes wave {
+    from { height: var(--h, 50%); }
+    to { height: calc(var(--h, 50%) * 0.4); }
+  }
+
+  /* Theme swatches */
+  .bento-theme-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+  .theme-swatch {
+    width: 52px;
+    height: 36px;
     border-radius: var(--radius);
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem;
-    background: hsla(30, 60%, 42%, 0.08);
-    color: var(--primary);
+    gap: 5px;
+    border: 1.5px solid var(--border);
+    transition: all var(--transition-base);
   }
-  .feature-icon.icon-warm { background: hsla(15, 60%, 50%, 0.08); color: hsl(15, 60%, 50%); }
-  .feature-icon.icon-gold { background: hsla(38, 80%, 55%, 0.1); color: var(--gold); }
-  .feature-icon.icon-green { background: hsla(160, 50%, 40%, 0.08); color: hsl(160, 50%, 40%); }
-  .feature-icon.icon-blue { background: hsla(220, 50%, 50%, 0.08); color: hsl(220, 50%, 50%); }
-  .feature-icon.icon-purple { background: hsla(270, 45%, 55%, 0.08); color: hsl(270, 45%, 55%); }
-
-  .feature-card h3 {
-    font-family: var(--font-body);
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--fg);
+  .swatch-light {
+    background: hsl(40, 30%, 97%);
   }
-  .feature-card p {
-    font-size: 0.875rem;
-    color: var(--fg-muted);
-    line-height: 1.6;
+  .swatch-dark {
+    background: hsl(30, 12%, 12%);
+    border-color: hsl(30, 8%, 22%);
   }
+  .sw-circle {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+  .swatch-light .sw-circle { background: hsl(30, 60%, 42%); }
+  .swatch-dark .sw-circle { background: hsl(35, 65%, 55%); }
+  .sw-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .sw-lines span {
+    height: 2px;
+    border-radius: 1px;
+    width: 16px;
+  }
+  .swatch-light .sw-lines span { background: hsl(35, 15%, 82%); }
+  .swatch-dark .sw-lines span { background: hsl(30, 8%, 25%); }
+  .sw-lines span:last-child { width: 10px; }
+  .theme-swatch:hover { transform: translateY(-2px); }
 
   /* ═══════════════════ HOW IT WORKS ═══════════════════ */
   #how-it-works {
@@ -1292,8 +1615,28 @@
       order: -1;
     }
 
-    .features-grid {
+    .bento {
       grid-template-columns: 1fr;
+    }
+    .bento-wide,
+    .bento-split {
+      grid-column: span 1;
+    }
+    .bento-wide {
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+    .bento-reader-vis { width: 100%; }
+    .bento-tall {
+      grid-row: span 1;
+    }
+    .bento-split {
+      flex-direction: column;
+    }
+    .bento-split-divider {
+      width: auto;
+      height: 1px;
+      margin: 0 1.25rem;
     }
 
     .pillars-grid {
