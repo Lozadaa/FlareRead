@@ -242,6 +242,16 @@ const appApi = {
   updateFocusWallSettings: (settings: Record<string, unknown>): Promise<unknown> =>
     ipcRenderer.invoke('focuswall:update-settings', settings),
 
+  // Window close confirmation
+  onCloseRequested: (callback: () => void): (() => void) => {
+    const handler = (): void => callback()
+    ipcRenderer.on('window:close-requested', handler)
+    return () => ipcRenderer.removeListener('window:close-requested', handler)
+  },
+  confirmClose: (): void => {
+    ipcRenderer.send('window:confirm-close')
+  },
+
   // Dev tools
   seedData: (): Promise<unknown> => ipcRenderer.invoke('db:seed:run'),
 

@@ -24,6 +24,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
   const bookRef = useRef<Book | null>(null)
   const renditionRef = useRef<Rendition | null>(null)
   const viewerRef = useRef<HTMLDivElement | null>(null)
+  const onHighlightClickRef = useRef<((h: Highlight, e: MouseEvent | null) => void) | null>(null)
 
   const [toc, setToc] = useState<TocItem[]>([])
   const [currentChapter, setCurrentChapter] = useState<string>('')
@@ -33,6 +34,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
   const [isLoading, setIsLoading] = useState(true)
   const [atStart, setAtStart] = useState(true)
   const [atEnd, setAtEnd] = useState(false)
+  const [didResume, setDidResume] = useState(false)
 
   // Save position to DB (throttled externally)
   const savePosition = useCallback(
@@ -107,7 +109,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
         font-family: ${s.fontFamily} !important;
         font-size: ${s.fontSize}px !important;
         line-height: ${s.lineHeight} !important;
-        padding: 0 24px !important;
+        padding: 0 72px !important;
         box-sizing: border-box !important;
         text-rendering: optimizeLegibility !important;
         -webkit-font-smoothing: antialiased !important;
@@ -648,8 +650,10 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
       if (progress.current_chapter) {
         setCurrentChapter(progress.current_chapter)
       }
+      setDidResume(true)
     } else {
       await rendition.display()
+      setDidResume(false)
     }
 
     // Get metadata
@@ -753,13 +757,16 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
       }
     }
 
-    // Add all highlights
+    // Add all highlights with click handler
     for (const h of highlightsList) {
       try {
         rendition.annotations.highlight(
           h.cfi_range,
           { id: h.id },
-          undefined,
+          (e: Event) => {
+            const mouseEvent = e instanceof MouseEvent ? e : null
+            onHighlightClickRef.current?.(h, mouseEvent)
+          },
           undefined,
           { fill: h.color, 'fill-opacity': '0.4', 'mix-blend-mode': 'multiply' }
         )
@@ -821,6 +828,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
   return {
     viewerRef,
     renditionRef,
+    onHighlightClickRef,
     toc,
     currentChapter,
     bookTitle,
@@ -829,6 +837,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
     isLoading,
     atStart,
     atEnd,
+    didResume,
     initBook,
     goNext,
     goPrev,

@@ -11,7 +11,7 @@ import { HighlightToolbar } from './HighlightToolbar'
 import { AnnotationsSidebar } from './AnnotationsSidebar'
 import { ImageLightbox } from './ImageLightbox'
 import { SessionTimer, AfkModal, BreakOverlay, MicrobreakReminder, WrapUpScreen, StartSessionDialog } from '@/components/session'
-import { SessionStartConfig } from '@/types'
+import { SessionStartConfig, Highlight } from '@/types'
 
 interface ReaderViewProps {
   bookId: string
@@ -28,13 +28,20 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
   const [annotationsOpen, setAnnotationsOpen] = useState(false)
   const [toolbarPosition, setToolbarPosition] = useState<{ x: number; y: number } | null>(null)
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
+  const [existingHighlight, setExistingHighlight] = useState<{ id: string; color: string } | null>(null)
+  const [showResumeToast, setShowResumeToast] = useState(false)
+  const [exitConfirmation, setExitConfirmation] = useState<{ action: () => void } | null>(null)
+  const [bookmark, setBookmark] = useState<{ cfi: string; percent: number; chapter: string } | null>(null)
+  const resumeToastShown = useRef(false)
   const selectionCfiRef = useRef<string | null>(null)
   const selectionTextRef = useRef<string>('')
+  const highlightsRef = useRef<Highlight[]>([])
   const wasFullscreenBeforeFocus = useRef(false)
 
   const {
     viewerRef,
     renditionRef,
+    onHighlightClickRef,
     toc,
     currentChapter,
     bookTitle,
@@ -43,6 +50,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     isLoading,
     atStart,
     atEnd,
+    didResume,
     initBook,
     goNext,
     goPrev,
@@ -64,6 +72,63 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     deleteNote,
     getNotesForHighlight
   } = useAnnotations({ bookId })
+
+  // Keep highlights ref in sync for use in event handlers
+  highlightsRef.current = highlights
+
+  // Load bookmark from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem(`flareread-bookmark-${bookId}`)
+    if (stored) {
+      try {
+        setBookmark(JSON.parse(stored))
+      } catch { /* ignore */ }
+    }
+  }, [bookId])
+
+  // Save/toggle bookmark
+  const toggleBookmark = useCallback(() => {
+    if (bookmark && bookmark.cfi === currentCfi) {
+      // Remove bookmark if we're at the bookmarked position
+      localStorage.removeItem(`flareread-bookmark-${bookId}`)
+      setBookmark(null)
+    } else {
+      // Set new bookmark at current position
+      const newBookmark = { cfi: currentCfi, percent, chapter: currentChapter }
+      localStorage.setItem(`flareread-bookmark-${bookId}`, JSON.stringify(newBookmark))
+      setBookmark(newBookmark)
+    }
+  }, [bookmark, currentCfi, percent, currentChapter, bookId])
+
+  const goToBookmark = useCallback(() => {
+    if (bookmark) {
+      goToCfi(bookmark.cfi)
+    }
+  }, [bookmark, goToCfi])
+
+  // Handle clicks on existing highlight annotations in the epub
+  onHighlightClickRef.current = (highlight, e) => {
+    setExistingHighlight({ id: highlight.id, color: highlight.color })
+    selectionCfiRef.current = highlight.cfi_range
+    selectionTextRef.current = ''
+    if (e) {
+      const iframe = viewerRef.current?.querySelector('iframe')
+      if (iframe) {
+        const iframeRect = iframe.getBoundingClientRect()
+        setToolbarPosition({
+          x: iframeRect.left + e.clientX,
+          y: iframeRect.top + e.clientY
+        })
+        return
+      }
+    }
+    // Fallback: position at center-top of reader
+    const viewer = viewerRef.current
+    if (viewer) {
+      const rect = viewer.getBoundingClientRect()
+      setToolbarPosition({ x: rect.left + rect.width / 2, y: rect.top + 60 })
+    }
+  }
 
   // ─── Study Session ─────────────────────────────────
   const {
@@ -159,6 +224,32 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     setShowWrapUp(false)
   }, [])
 
+  // ─── Exit Book with Focus Mode Confirmation ───────
+  const doExitBook = useCallback(() => {
+    if (sessionActive) stopSession()
+    onBack()
+  }, [sessionActive, stopSession, onBack])
+
+  const tryExitBook = useCallback(() => {
+    saveCurrentPosition()
+    if (focusMode || sessionActive) {
+      setExitConfirmation({ action: doExitBook })
+    } else {
+      doExitBook()
+    }
+  }, [focusMode, sessionActive, saveCurrentPosition, doExitBook])
+
+  const confirmExit = useCallback(() => {
+    if (exitConfirmation) {
+      exitConfirmation.action()
+      setExitConfirmation(null)
+    }
+  }, [exitConfirmation])
+
+  const cancelExit = useCallback(() => {
+    setExitConfirmation(null)
+  }, [])
+
   // Track last saved CFI to avoid redundant saves
   const lastSavedCfi = useRef('')
   const autoSaveInterval = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -214,6 +305,16 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     }
   }, [isLoading, highlights, applyHighlights])
 
+  // Show "continued reading" toast when book resumes from saved position
+  useEffect(() => {
+    if (!isLoading && didResume && !resumeToastShown.current) {
+      resumeToastShown.current = true
+      setShowResumeToast(true)
+      const timer = setTimeout(() => setShowResumeToast(false), 3500)
+      return () => clearTimeout(timer)
+    }
+  }, [isLoading, didResume])
+
   // Set up text selection listener on the epub iframe
   useEffect(() => {
     const rendition = renditionRef.current
@@ -228,6 +329,16 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
 
       selectionCfiRef.current = cfiRange
       selectionTextRef.current = text
+
+      // Check if this selection matches an existing highlight (by CFI or by identical text in same chapter)
+      const existing = highlightsRef.current.find(h =>
+        h.cfi_range === cfiRange || h.text === text
+      )
+      if (existing) {
+        // Use the existing highlight's CFI so remove/update works correctly
+        selectionCfiRef.current = existing.cfi_range
+      }
+      setExistingHighlight(existing ? { id: existing.id, color: existing.color } : null)
 
       // Get position for toolbar - use the range's bounding rect
       const range = selection.getRangeAt(0)
@@ -250,18 +361,33 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     }
   }, [isLoading, renditionRef, viewerRef])
 
-  // Handle highlighting
+  // Handle highlighting (create or update)
   const handleHighlight = useCallback(
     async (color: string) => {
-      if (!selectionCfiRef.current || !selectionTextRef.current) return
+      if (existingHighlight) {
+        // Update existing highlight color
+        if (existingHighlight.color !== color) {
+          await updateHighlight(existingHighlight.id, { color })
+        }
+      } else {
+        if (!selectionCfiRef.current || !selectionTextRef.current) return
 
-      await createHighlight({
-        cfi_range: selectionCfiRef.current,
-        text: selectionTextRef.current,
-        color,
-        chapter: currentChapter || undefined
-      })
-      onHighlightCreated()
+        // Check for duplicate CFI range
+        const duplicate = highlightsRef.current.find(h => h.cfi_range === selectionCfiRef.current)
+        if (duplicate) {
+          if (duplicate.color !== color) {
+            await updateHighlight(duplicate.id, { color })
+          }
+        } else {
+          await createHighlight({
+            cfi_range: selectionCfiRef.current,
+            text: selectionTextRef.current,
+            color,
+            chapter: currentChapter || undefined
+          })
+          onHighlightCreated()
+        }
+      }
 
       // Clear selection in the iframe
       const iframe = viewerRef.current?.querySelector('iframe')
@@ -270,14 +396,36 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       }
 
       setToolbarPosition(null)
+      setExistingHighlight(null)
       selectionCfiRef.current = null
       selectionTextRef.current = ''
     },
-    [createHighlight, currentChapter, viewerRef, onHighlightCreated]
+    [existingHighlight, createHighlight, updateHighlight, currentChapter, viewerRef, onHighlightCreated]
   )
+
+  // Remove highlight directly from the toolbar
+  const handleRemoveHighlightFromToolbar = useCallback(async () => {
+    if (!existingHighlight) return
+    const highlight = highlightsRef.current.find(h => h.id === existingHighlight.id)
+    if (highlight) {
+      removeHighlightAnnotation(highlight.cfi_range)
+    }
+    await deleteHighlight(existingHighlight.id)
+
+    const iframe = viewerRef.current?.querySelector('iframe')
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.getSelection()?.removeAllRanges()
+    }
+
+    setToolbarPosition(null)
+    setExistingHighlight(null)
+    selectionCfiRef.current = null
+    selectionTextRef.current = ''
+  }, [existingHighlight, removeHighlightAnnotation, deleteHighlight, viewerRef])
 
   const handleDismissToolbar = useCallback(() => {
     setToolbarPosition(null)
+    setExistingHighlight(null)
     selectionCfiRef.current = null
     selectionTextRef.current = ''
   }, [])
@@ -365,6 +513,25 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goNext, goPrev, settings.scrollMode, lightboxSrc])
 
+  // ─── Window close confirmation (focus mode / session) ──
+  useEffect(() => {
+    const cleanup = window.appApi.onCloseRequested(() => {
+      if (focusMode || sessionActive) {
+        setExitConfirmation({
+          action: () => {
+            if (sessionActive) stopSession()
+            saveCurrentPosition()
+            window.appApi.confirmClose()
+          }
+        })
+      } else {
+        saveCurrentPosition()
+        window.appApi.confirmClose()
+      }
+    })
+    return cleanup
+  }, [focusMode, sessionActive, stopSession, saveCurrentPosition])
+
   // ─── Menu event handlers ──────────────────────────
   useEffect(() => {
     const cleanups = [
@@ -375,9 +542,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
         setTocOpen((prev) => !prev)
       }),
       window.appApi.onMenuCloseBook(() => {
-        saveCurrentPosition()
-        if (sessionActive) stopSession()
-        onBack()
+        tryExitBook()
       }),
       window.appApi.onMenuZoomIn(() => {
         updateSettings({ fontSize: Math.min(settings.fontSize + 2, 32) })
@@ -396,7 +561,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       })
     ]
     return () => cleanups.forEach((fn) => fn())
-  }, [sessionActive, stopSession, onBack, saveCurrentPosition, updateSettings, settings.fontSize])
+  }, [sessionActive, stopSession, onBack, saveCurrentPosition, tryExitBook, updateSettings, settings.fontSize])
 
   return (
     <div className="h-screen flex flex-col bg-reading-bg overflow-hidden">
@@ -421,11 +586,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
           setTocOpen(false)
           setSettingsOpen(false)
         }}
-        onBack={() => {
-          saveCurrentPosition()
-          if (sessionActive) stopSession()
-          onBack()
-        }}
+        onBack={tryExitBook}
         highlightCount={highlights.length}
         sessionSlot={
           session && session.state !== 'completed' ? (
@@ -521,16 +682,53 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
           </button>
 
           <div className="flex-1 flex items-center gap-3">
-            <div className="flex-1 h-1 bg-border rounded-full overflow-hidden">
+            <div className="relative flex-1 h-1 bg-border rounded-full overflow-visible">
+              {/* Progress fill */}
               <div
                 className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-primary to-sidebar-gold"
                 style={{ width: `${percent}%` }}
               />
+              {/* Bookmark flag on progress bar */}
+              {bookmark && (
+                <button
+                  onClick={goToBookmark}
+                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-10 group"
+                  style={{ left: `${bookmark.percent}%` }}
+                  title={`Ir a marcador: ${bookmark.chapter || `${bookmark.percent}%`}`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="text-primary drop-shadow-sm group-hover:scale-125 transition-transform"
+                  >
+                    <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+                  </svg>
+                </button>
+              )}
             </div>
             <span className="font-mono text-ui-xs text-muted-foreground tabular-nums shrink-0 w-10 text-right">
               {percent}%
             </span>
           </div>
+
+          {/* Bookmark toggle button */}
+          <button
+            onClick={toggleBookmark}
+            className={`p-1 rounded-md transition-all hover:scale-110 ${
+              bookmark
+                ? 'text-primary hover:bg-primary/10'
+                : 'text-muted-foreground hover:bg-accent'
+            }`}
+            title={bookmark ? 'Quitar marcador' : 'Marcar posicion actual'}
+            aria-label={bookmark ? 'Quitar marcador' : 'Marcar posicion actual'}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill={bookmark ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+          </button>
 
           <button
             onClick={goNext}
@@ -550,6 +748,8 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
         position={toolbarPosition}
         onHighlight={handleHighlight}
         onDismiss={handleDismissToolbar}
+        existingHighlight={existingHighlight}
+        onRemoveHighlight={handleRemoveHighlightFromToolbar}
       />
 
       {/* TOC Sidebar */}
@@ -623,6 +823,60 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
             goToCfi(cfi)
           }}
         />
+      )}
+
+      {/* Exit Focus Mode Confirmation */}
+      {exitConfirmation && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-popover rounded-xl shadow-2xl border border-border p-6 max-w-sm mx-4 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="12" y1="8" x2="12" y2="12" />
+                  <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold">
+                {sessionActive ? 'Sesion activa' : 'Modo enfoque activo'}
+              </h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-5 ml-[52px]">
+              {sessionActive
+                ? 'Tu sesion de estudio se detendra si sales ahora. ¿Quieres continuar?'
+                : 'Estas en modo enfoque. ¿Seguro que quieres salir?'}
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={cancelExit}
+                className="px-4 py-2 rounded-lg text-sm font-medium hover:bg-accent transition-colors"
+              >
+                Seguir leyendo
+              </button>
+              <button
+                onClick={confirmExit}
+                className="px-4 py-2 rounded-lg text-sm font-medium bg-destructive text-destructive-foreground hover:bg-destructive/90 transition-colors"
+              >
+                Salir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resume Toast */}
+      {showResumeToast && (
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 bg-popover/95 backdrop-blur-xl rounded-xl shadow-lg border border-border animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-primary shrink-0">
+            <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+          <div>
+            <p className="text-[11px] text-muted-foreground leading-tight">Continuando donde lo dejaste</p>
+            <p className="text-sm font-medium leading-tight">
+              {currentChapter}{currentChapter && percent > 0 ? ` \u00b7 ${percent}%` : percent > 0 ? `${percent}%` : ''}
+            </p>
+          </div>
+        </div>
       )}
 
       {/* Image Lightbox */}

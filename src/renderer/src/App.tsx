@@ -81,6 +81,16 @@ function App(): JSX.Element {
     }
   }, [settingsLoaded, settings])
 
+  // Auto-confirm window close when not in reader (no protected mode)
+  useEffect(() => {
+    if (view.type !== 'reader') {
+      const cleanup = window.appApi.onCloseRequested(() => {
+        window.appApi.confirmClose()
+      })
+      return cleanup
+    }
+  }, [view.type])
+
   // Ctrl+, keyboard shortcut for settings
   useEffect(() => {
     const handler = (e: KeyboardEvent): void => {

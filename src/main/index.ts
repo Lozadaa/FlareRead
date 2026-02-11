@@ -12,6 +12,9 @@ import { registerCategoryHandlers } from './categories/handlers'
 import { getFocusWallManager } from './focuswall/FocusWallManager'
 import { seedSampleData } from './database/seed'
 
+// Allow Web Audio API to play without requiring a user gesture per-context
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
+
 function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1200,
@@ -399,6 +402,21 @@ app.whenReady().then(() => {
 
   const mainWindow = createWindow()
   buildMenu(mainWindow)
+
+  // ─── Intercept window close for focus mode confirmation ──
+  let forceClose = false
+  mainWindow.on('close', (e) => {
+    if (!forceClose) {
+      e.preventDefault()
+      mainWindow.webContents.send('window:close-requested')
+    }
+  })
+
+  ipcMain.on('window:confirm-close', () => {
+    forceClose = true
+    const win = BrowserWindow.getAllWindows()[0]
+    if (win) win.close()
+  })
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
