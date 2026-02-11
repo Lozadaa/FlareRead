@@ -107,7 +107,7 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
         font-family: ${s.fontFamily} !important;
         font-size: ${s.fontSize}px !important;
         line-height: ${s.lineHeight} !important;
-        padding: 0 !important;
+        padding: 0 24px !important;
         box-sizing: border-box !important;
         text-rendering: optimizeLegibility !important;
         -webkit-font-smoothing: antialiased !important;
@@ -545,6 +545,22 @@ export function useEpubReader({ bookId, filePath, settings, resolvedTheme, onIma
         font-size: inherit !important;
         margin-bottom: 0.4em !important;
         text-indent: 0 !important;
+      }
+
+      /* === Custom scrollbar (scroll mode) === */
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: ${rawFg ? `hsl(${rawFg} / 0.15)` : 'rgba(45,36,24,0.15)'};
+        border-radius: 999px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: ${rawFg ? `hsl(${rawFg} / 0.3)` : 'rgba(45,36,24,0.3)'};
       }
     `
   // eslint-disable-next-line react-hooks/exhaustive-deps

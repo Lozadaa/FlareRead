@@ -122,6 +122,22 @@
     user-select: none;
     -webkit-user-select: none;
   }
+
+  /* ── Custom scrollbar — warm, minimal ── */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--reading-fg) / 0.15);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--reading-fg) / 0.3);
+  }
 }
 
 @layer components {
