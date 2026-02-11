@@ -437,7 +437,7 @@ class AmbientAudioEngine {
   private ctx: AudioContext | null = null
   private masterGain: GainNode | null = null
   private activeSounds: Map<SoundscapeId, ActiveSound> = new Map()
-  private _masterVolume = 0.4
+  private _masterVolume = 0.5
   private _paused = false
 
   private getContext(): AudioContext {
@@ -446,9 +446,7 @@ class AmbientAudioEngine {
       this.masterGain = this.ctx.createGain()
       this.masterGain.gain.value = this._masterVolume
       this.masterGain.connect(this.ctx.destination)
-    }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume().catch(() => { /* autoplay policy blocked */ })
+      console.log('[AudioEngine] Created AudioContext, state:', this.ctx.state)
     }
     return this.ctx
   }
@@ -457,7 +455,9 @@ class AmbientAudioEngine {
   private async ensureRunning(): Promise<AudioContext> {
     const ctx = this.getContext()
     if (ctx.state === 'suspended') {
+      console.log('[AudioEngine] Resuming suspended AudioContext...')
       await ctx.resume()
+      console.log('[AudioEngine] AudioContext resumed, state:', ctx.state)
     }
     return ctx
   }
@@ -519,6 +519,10 @@ class AmbientAudioEngine {
       if (!this._paused) {
         soundGain.gain.setTargetAtTime(volume, ctx.currentTime, FADE_DURATION)
       }
+
+      console.log(`[AudioEngine] Playing "${id}" vol=${volume}, master=${this._masterVolume}, ctx.state=${ctx.state}`)
+    }).catch((err) => {
+      console.error('[AudioEngine] Failed to play:', id, err)
     })
   }
 

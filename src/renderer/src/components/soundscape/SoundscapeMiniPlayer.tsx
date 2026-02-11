@@ -99,7 +99,7 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
   return (
     <div
       className={cn(
-        'fixed bottom-4 left-4 z-40',
+        'fixed bottom-4 right-4 z-40',
         'bg-popover/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.2)]',
         'transition-all duration-300 ease-out',
         isExpanded ? 'w-80' : 'w-auto'
