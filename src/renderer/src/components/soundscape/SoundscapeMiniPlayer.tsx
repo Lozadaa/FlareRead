@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Volume2,
+  Volume1,
   VolumeX,
   Pause,
   Play,
@@ -48,11 +49,10 @@ const SOUND_BG_ACTIVE: Record<SoundscapeId, string> = {
   forest: 'bg-emerald-500/10 border-emerald-500/30'
 }
 
-export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX.Element | null {
+export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX.Element {
   const {
     soundscapes,
     activeSounds,
-    isOpen,
     isExpanded,
     isPaused,
     masterVolume,
@@ -63,11 +63,13 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
     togglePause,
     stopAll,
     toggleExpanded,
+    setExpanded,
     profiles,
     activeProfileName,
     applyProfile,
     saveProfile,
     deleteProfile,
+    toggleMute,
     hasActiveSounds
   } = sounds
 
@@ -82,8 +84,6 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
     }
   }, [savingProfile])
 
-  if (!isOpen) return null
-
   const handleSaveProfile = (): void => {
     if (newProfileName.trim()) {
       saveProfile(newProfileName.trim())
@@ -91,6 +91,10 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
       setSavingProfile(false)
     }
   }
+
+  const isMuted = masterVolume === 0
+
+  const MuteIcon = isMuted ? VolumeX : masterVolume < 0.5 ? Volume1 : Volume2
 
   return (
     <div
@@ -279,7 +283,7 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
 
       {/* Collapsed mini-bar */}
       <div className="flex items-center gap-1 p-2">
-        {/* Active sound indicators */}
+        {/* Active sound indicators or idle speaker icon */}
         <div className="flex items-center gap-0.5 px-1">
           {hasActiveSounds ? (
             activeSounds.map((id) => {
@@ -287,14 +291,46 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
               return (
                 <Icon
                   key={id}
-                  className={cn('h-3.5 w-3.5', isPaused ? 'text-muted-foreground' : SOUND_COLORS[id])}
+                  className={cn('h-3.5 w-3.5', isPaused || isMuted ? 'text-muted-foreground' : SOUND_COLORS[id])}
                 />
               )
             })
           ) : (
-            <Volume2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <button
+              onClick={() => setExpanded(true)}
+              className="p-0.5 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+              title="Open soundscapes"
+            >
+              <Volume2 className="h-3.5 w-3.5" />
+            </button>
           )}
         </div>
+
+        {/* Mute toggle + inline volume slider — visible when sounds are active */}
+        {hasActiveSounds && (
+          <>
+            <button
+              onClick={toggleMute}
+              className={cn(
+                'p-1 rounded hover:bg-muted transition-colors',
+                isMuted ? 'text-destructive/70 hover:text-destructive' : 'text-muted-foreground hover:text-foreground'
+              )}
+              title={isMuted ? 'Unmute (M)' : 'Mute (M)'}
+            >
+              <MuteIcon className="h-3.5 w-3.5" />
+            </button>
+
+            <input
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(masterVolume * 100)}
+              onChange={(e) => setMasterVolume(Number(e.target.value) / 100)}
+              className="w-20 h-1 rounded-full appearance-none bg-input accent-primary cursor-pointer"
+              title={`Volume: ${Math.round(masterVolume * 100)}%`}
+            />
+          </>
+        )}
 
         {/* Play/Pause */}
         {hasActiveSounds && (

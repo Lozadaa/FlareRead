@@ -437,7 +437,7 @@ class AmbientAudioEngine {
   private ctx: AudioContext | null = null
   private masterGain: GainNode | null = null
   private activeSounds: Map<SoundscapeId, ActiveSound> = new Map()
-  private _masterVolume = 0.7
+  private _masterVolume = 0.4
   private _paused = false
 
   private getContext(): AudioContext {
@@ -448,9 +448,18 @@ class AmbientAudioEngine {
       this.masterGain.connect(this.ctx.destination)
     }
     if (this.ctx.state === 'suspended') {
-      this.ctx.resume()
+      this.ctx.resume().catch(() => { /* autoplay policy blocked */ })
     }
     return this.ctx
+  }
+
+  /** Ensure the AudioContext is running before playing */
+  private async ensureRunning(): Promise<AudioContext> {
+    const ctx = this.getContext()
+    if (ctx.state === 'suspended') {
+      await ctx.resume()
+    }
+    return ctx
   }
 
   private getMasterGain(): GainNode {
@@ -478,34 +487,39 @@ class AmbientAudioEngine {
   }
 
   getVolume(id: SoundscapeId): number {
-    return this.activeSounds.get(id)?.volume ?? 0.7
+    return this.activeSounds.get(id)?.volume ?? 0.5
   }
 
   getActiveSounds(): SoundscapeId[] {
     return [...this.activeSounds.keys()]
   }
 
-  play(id: SoundscapeId, volume = 0.7): void {
+  play(id: SoundscapeId, volume = 0.5): void {
     if (this.activeSounds.has(id)) return
 
-    const ctx = this.getContext()
-    const master = this.getMasterGain()
+    // Ensure context is running, then set up audio nodes
+    this.ensureRunning().then((ctx) => {
+      // Guard against double-play if called rapidly
+      if (this.activeSounds.has(id)) return
 
-    // Create a per-sound gain node
-    const soundGain = ctx.createGain()
-    soundGain.gain.value = 0
-    soundGain.connect(master)
+      const master = this.getMasterGain()
 
-    // Create the soundscape
-    const creator = CREATORS[id]
-    const nodes = creator(ctx, soundGain)
+      // Create a per-sound gain node
+      const soundGain = ctx.createGain()
+      soundGain.gain.value = 0
+      soundGain.connect(master)
 
-    this.activeSounds.set(id, { nodes, volume })
+      // Create the soundscape
+      const creator = CREATORS[id]
+      const nodes = creator(ctx, soundGain)
 
-    // Fade in
-    if (!this._paused) {
-      soundGain.gain.setTargetAtTime(volume, ctx.currentTime, FADE_DURATION)
-    }
+      this.activeSounds.set(id, { nodes, volume })
+
+      // Fade in
+      if (!this._paused) {
+        soundGain.gain.setTargetAtTime(volume, ctx.currentTime, FADE_DURATION)
+      }
+    })
   }
 
   stop(id: SoundscapeId): void {
@@ -559,11 +573,15 @@ class AmbientAudioEngine {
     this._paused = false
 
     if (this.ctx) {
-      if (this.ctx.state === 'suspended') {
-        this.ctx.resume()
+      const ctx = this.ctx
+      const doFade = (): void => {
+        this.masterGain?.gain.setTargetAtTime(this._masterVolume, ctx.currentTime, FADE_DURATION)
       }
-      // Fade master back
-      this.masterGain?.gain.setTargetAtTime(this._masterVolume, this.ctx.currentTime, FADE_DURATION)
+      if (ctx.state === 'suspended') {
+        ctx.resume().then(doFade).catch(() => { /* blocked */ })
+      } else {
+        doFade()
+      }
     }
   }
 

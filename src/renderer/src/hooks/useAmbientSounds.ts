@@ -14,28 +14,28 @@ const DEFAULT_PROFILES: Record<string, VolumeProfile> = {
   silent: { name: 'Silent', masterVolume: 0, sounds: {} },
   rain_focus: {
     name: 'Rain Focus',
-    masterVolume: 0.6,
-    sounds: { rain: 0.8 }
+    masterVolume: 0.4,
+    sounds: { rain: 0.6 }
   },
   cafe_study: {
     name: 'Cafe Study',
-    masterVolume: 0.5,
-    sounds: { coffeeshop: 0.7 }
+    masterVolume: 0.35,
+    sounds: { coffeeshop: 0.5 }
   },
   deep_focus: {
     name: 'Deep Focus',
-    masterVolume: 0.5,
-    sounds: { whitenoise: 0.5, rain: 0.3 }
+    masterVolume: 0.35,
+    sounds: { whitenoise: 0.4, rain: 0.25 }
   },
   cozy_reading: {
     name: 'Cozy Reading',
-    masterVolume: 0.6,
-    sounds: { fireplace: 0.7, rain: 0.3 }
+    masterVolume: 0.4,
+    sounds: { fireplace: 0.5, rain: 0.25 }
   },
   nature_escape: {
     name: 'Nature Escape',
-    masterVolume: 0.6,
-    sounds: { forest: 0.8 }
+    masterVolume: 0.4,
+    sounds: { forest: 0.6 }
   }
 }
 
@@ -125,6 +125,8 @@ export interface UseAmbientSoundsReturn {
   saveProfile: (name: string) => void
   /** Delete a custom profile */
   deleteProfile: (name: string) => void
+  /** Toggle mute (master volume 0 ↔ previous value) */
+  toggleMute: () => void
   /** Whether any sounds are active */
   hasActiveSounds: boolean
 }
@@ -137,7 +139,7 @@ export function useAmbientSounds(
   const [isOpen, setIsOpen] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
-  const [masterVolume, setMasterVolumeState] = useState(0.7)
+  const [masterVolume, setMasterVolumeState] = useState(0.4)
   const [volumes, setVolumes] = useState<Record<string, number>>({})
   const [profiles, setProfiles] = useState<Record<string, VolumeProfile>>(loadProfiles)
   const [activeProfileName, setActiveProfileName] = useState<string | null>(loadActiveProfile)
@@ -146,6 +148,8 @@ export function useAmbientSounds(
   const prevSessionStateRef = useRef<string | null>(null)
   // Track if paused by AFK (to distinguish from user pause)
   const pausedByAfkRef = useRef(false)
+  // Store pre-mute volume for toggle
+  const preMuteVolumeRef = useRef(0.4)
 
   // Auto-pause on AFK, auto-resume on session resume
   useEffect(() => {
@@ -198,7 +202,7 @@ export function useAmbientSounds(
       audioEngine.stop(id)
       setActiveSounds((prev) => prev.filter((s) => s !== id))
     } else {
-      const vol = volumes[id] ?? 0.7
+      const vol = volumes[id] ?? 0.5
       audioEngine.play(id, vol)
       setActiveSounds((prev) => [...prev, id])
       // Auto-show mini-player when first sound activated
@@ -217,7 +221,19 @@ export function useAmbientSounds(
   const setMasterVolume = useCallback((volume: number) => {
     audioEngine.masterVolume = volume
     setMasterVolumeState(volume)
+    if (volume > 0) {
+      preMuteVolumeRef.current = volume
+    }
   }, [])
+
+  const toggleMute = useCallback(() => {
+    if (masterVolume > 0) {
+      preMuteVolumeRef.current = masterVolume
+      setMasterVolume(0)
+    } else {
+      setMasterVolume(preMuteVolumeRef.current || 0.4)
+    }
+  }, [masterVolume, setMasterVolume])
 
   const pause = useCallback(() => {
     audioEngine.pause()
@@ -255,7 +271,7 @@ export function useAmbientSounds(
   }, [])
 
   const getVolume = useCallback((id: SoundscapeId) => {
-    return volumes[id] ?? 0.7
+    return volumes[id] ?? 0.5
   }, [volumes])
 
   const applyProfile = useCallback((name: string) => {
@@ -300,7 +316,7 @@ export function useAmbientSounds(
       sounds: {}
     }
     for (const id of activeSounds) {
-      profile.sounds[id] = volumes[id] ?? 0.7
+      profile.sounds[id] = volumes[id] ?? 0.5
     }
 
     const updated = { ...profiles, [key]: profile }
@@ -345,6 +361,7 @@ export function useAmbientSounds(
     applyProfile,
     saveProfile,
     deleteProfile,
+    toggleMute,
     hasActiveSounds: activeSounds.length > 0
   }
 }

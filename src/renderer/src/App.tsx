@@ -93,6 +93,20 @@ function App(): JSX.Element {
     return () => document.removeEventListener('keydown', handler)
   }, [])
 
+  // M key to toggle mute (when not focused on an input)
+  useEffect(() => {
+    const handler = (e: KeyboardEvent): void => {
+      if (e.key === 'm' || e.key === 'M') {
+        const tag = (e.target as HTMLElement).tagName
+        if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target as HTMLElement).isContentEditable) return
+        if (e.metaKey || e.ctrlKey || e.altKey) return
+        ambientSounds.toggleMute()
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [ambientSounds])
+
   const handleWizardComplete = useCallback((choices: Partial<AppSettings>) => {
     setMultiple(choices)
     setShowWizard(false)
