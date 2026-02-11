@@ -129,11 +129,40 @@ interface SessionAPI {
   onStateUpdate: (callback: (snapshot: unknown) => void) => () => void
 }
 
+interface TtsAPI {
+  speak: (params: {
+    bookId: string
+    chapterHref: string
+    chunks: Array<{ index: number; text: string; startOffset: number }>
+    startChunkIndex?: number
+    voiceId?: string
+    rate?: number
+  }) => Promise<unknown>
+  pause: () => Promise<unknown>
+  resume: () => Promise<unknown>
+  stop: () => Promise<unknown>
+  nextChunk: () => Promise<unknown>
+  prevChunk: () => Promise<unknown>
+  setVoice: (voiceId: string) => Promise<unknown>
+  setRate: (rate: number) => Promise<unknown>
+  getStatus: () => Promise<unknown>
+  getVoices: () => Promise<unknown[]>
+  isInstalled: () => Promise<boolean>
+  install: () => Promise<unknown>
+  downloadVoice: (voiceId: string) => Promise<unknown>
+  clearCache: () => Promise<unknown>
+  onStateUpdate: (callback: (snapshot: unknown) => void) => () => void
+  onChunkReady: (callback: (data: { chunkIndex: number; wavUrl: string }) => void) => () => void
+  onDownloadProgress: (callback: (data: { percent: number; label: string }) => void) => () => void
+  onError: (callback: (data: { message: string; code: string }) => void) => () => void
+}
+
 declare global {
   interface Window {
     electron: ElectronAPI
     api: DatabaseAPI
     appApi: AppAPI
     sessionApi: SessionAPI
+    ttsApi: TtsAPI
   }
 }

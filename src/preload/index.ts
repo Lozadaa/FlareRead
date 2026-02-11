@@ -322,9 +322,60 @@ const sessionApi = {
   }
 }
 
+// ─── TTS API ────────────────────────────────────────
+const ttsApi = {
+  speak: (params: {
+    bookId: string
+    chapterHref: string
+    chunks: Array<{ index: number; text: string; startOffset: number }>
+    startChunkIndex?: number
+    voiceId?: string
+    rate?: number
+  }): Promise<unknown> => ipcRenderer.invoke('tts:speak', params),
+
+  pause: (): Promise<unknown> => ipcRenderer.invoke('tts:pause'),
+  resume: (): Promise<unknown> => ipcRenderer.invoke('tts:resume'),
+  stop: (): Promise<unknown> => ipcRenderer.invoke('tts:stop'),
+  nextChunk: (): Promise<unknown> => ipcRenderer.invoke('tts:next-chunk'),
+  prevChunk: (): Promise<unknown> => ipcRenderer.invoke('tts:prev-chunk'),
+  setVoice: (voiceId: string): Promise<unknown> => ipcRenderer.invoke('tts:set-voice', voiceId),
+  setRate: (rate: number): Promise<unknown> => ipcRenderer.invoke('tts:set-rate', rate),
+  getStatus: (): Promise<unknown> => ipcRenderer.invoke('tts:get-status'),
+  getVoices: (): Promise<unknown[]> => ipcRenderer.invoke('tts:get-voices'),
+  isInstalled: (): Promise<boolean> => ipcRenderer.invoke('tts:is-installed'),
+  install: (): Promise<unknown> => ipcRenderer.invoke('tts:install'),
+  downloadVoice: (voiceId: string): Promise<unknown> => ipcRenderer.invoke('tts:download-voice', voiceId),
+  clearCache: (): Promise<unknown> => ipcRenderer.invoke('tts:clear-cache'),
+
+  onStateUpdate: (callback: (snapshot: unknown) => void): (() => void) => {
+    const handler = (_event: unknown, snapshot: unknown): void => callback(snapshot)
+    ipcRenderer.on('tts:state-update', handler as (...args: unknown[]) => void)
+    return () => ipcRenderer.removeListener('tts:state-update', handler as (...args: unknown[]) => void)
+  },
+
+  onChunkReady: (callback: (data: { chunkIndex: number; wavUrl: string }) => void): (() => void) => {
+    const handler = (_event: unknown, data: { chunkIndex: number; wavUrl: string }): void => callback(data)
+    ipcRenderer.on('tts:chunk-ready', handler as (...args: unknown[]) => void)
+    return () => ipcRenderer.removeListener('tts:chunk-ready', handler as (...args: unknown[]) => void)
+  },
+
+  onDownloadProgress: (callback: (data: { percent: number; label: string }) => void): (() => void) => {
+    const handler = (_event: unknown, data: { percent: number; label: string }): void => callback(data)
+    ipcRenderer.on('tts:download-progress', handler as (...args: unknown[]) => void)
+    return () => ipcRenderer.removeListener('tts:download-progress', handler as (...args: unknown[]) => void)
+  },
+
+  onError: (callback: (data: { message: string; code: string }) => void): (() => void) => {
+    const handler = (_event: unknown, data: { message: string; code: string }): void => callback(data)
+    ipcRenderer.on('tts:error', handler as (...args: unknown[]) => void)
+    return () => ipcRenderer.removeListener('tts:error', handler as (...args: unknown[]) => void)
+  }
+}
+
 export type DatabaseAPI = typeof api
 export type AppAPI = typeof appApi
 export type SessionAPI = typeof sessionApi
+export type TtsAPI = typeof ttsApi
 
 if (process.contextIsolated) {
   try {
@@ -332,6 +383,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('appApi', appApi)
     contextBridge.exposeInMainWorld('sessionApi', sessionApi)
+    contextBridge.exposeInMainWorld('ttsApi', ttsApi)
   } catch (error) {
     console.error(error)
   }
@@ -344,4 +396,6 @@ if (process.contextIsolated) {
   window.appApi = appApi
   // @ts-ignore (define in dts)
   window.sessionApi = sessionApi
+  // @ts-ignore (define in dts)
+  window.ttsApi = ttsApi
 }

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Plus } from 'lucide-react'
 import { ReaderView } from '@/components/reader/ReaderView'
 import { AppShell, TopBar } from '@/components/layout'
@@ -73,6 +73,63 @@ function App(): JSX.Element {
 
   // Ambient soundscapes
   const ambientSounds = useAmbientSounds(session, settings['soundscape:autoPauseOnAfk'])
+
+  // ─── TTS Install Prompt ─────────────────────────────
+  const [showTtsSetup, setShowTtsSetup] = useState(false)
+  const [ttsInstalled, setTtsInstalled] = useState<boolean | null>(null)
+  const [ttsInstalling, setTtsInstalling] = useState(false)
+  const [ttsProgress, setTtsProgress] = useState<{ percent: number; label: string } | null>(null)
+
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    window.ttsApi
+      .isInstalled()
+      .then((installed) => {
+        setTtsInstalled(installed)
+        if (!installed && !localStorage.getItem('flareread-tts-dismissed')) {
+          timer = setTimeout(() => setShowTtsSetup(true), 1500)
+        }
+      })
+      .catch(() => {
+        // If check fails, still offer install
+        setTtsInstalled(false)
+        timer = setTimeout(() => setShowTtsSetup(true), 1500)
+      })
+
+    const cleanupProgress = window.ttsApi.onDownloadProgress((data) => {
+      setTtsProgress(data)
+      if (data.percent >= 100) {
+        setTimeout(() => {
+          setTtsProgress(null)
+          setTtsInstalling(false)
+          setTtsInstalled(true)
+          setShowTtsSetup(false)
+        }, 1500)
+      }
+    })
+
+    return () => {
+      if (timer) clearTimeout(timer)
+      cleanupProgress()
+    }
+  }, [])
+
+  const handleTtsInstall = useCallback(async () => {
+    setTtsInstalling(true)
+    try {
+      await window.ttsApi.install()
+      setTtsInstalled(true)
+      setShowTtsSetup(false)
+    } catch {
+      setTtsInstalling(false)
+    }
+  }, [])
+
+  const handleTtsDismiss = useCallback(() => {
+    localStorage.setItem('flareread-tts-dismissed', '1')
+    setShowTtsSetup(false)
+  }, [])
 
   // Show first-run wizard if not completed
   useEffect(() => {
@@ -457,6 +514,61 @@ function App(): JSX.Element {
             </AnimatePresence>
           </div>
         </AppShell>
+      )}
+
+      {/* TTS Install Prompt (one-time, app-level) */}
+      {showTtsSetup && (
+        <div className="fixed bottom-6 right-6 z-[9999] w-80 bg-popover/95 backdrop-blur-xl rounded-xl shadow-2xl border border-border p-4 animate-in slide-in-from-bottom-4 fade-in duration-300">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" />
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold mb-0.5">Lectura en voz alta</p>
+              <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                {ttsInstalling
+                  ? ttsProgress?.label || 'Instalando Kokoro TTS...'
+                  : 'Escucha tus libros con voz natural, totalmente offline. Se descargara Kokoro TTS (~90 MB).'}
+              </p>
+              {ttsInstalling && ttsProgress && (
+                <div className="mb-3 h-1.5 bg-border rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-300"
+                    style={{ width: `${ttsProgress.percent}%` }}
+                  />
+                </div>
+              )}
+              {!ttsInstalling && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleTtsInstall}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                  >
+                    Instalar ahora
+                  </button>
+                  <button
+                    onClick={handleTtsDismiss}
+                    className="px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                  >
+                    No mostrar mas
+                  </button>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => setShowTtsSetup(false)}
+              className="p-0.5 rounded hover:bg-accent text-muted-foreground transition-colors shrink-0"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
+        </div>
       )}
     </>
   )

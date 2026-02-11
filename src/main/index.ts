@@ -9,7 +9,9 @@ import { registerSessionHandlers } from './session/handlers'
 import { getSessionManager } from './session/StudySessionManager'
 import { registerFocusWallHandlers } from './focuswall/handlers'
 import { registerCategoryHandlers } from './categories/handlers'
+import { registerTtsHandlers } from './tts/handlers'
 import { getFocusWallManager } from './focuswall/FocusWallManager'
+import { getTtsService } from './tts/TtsService'
 import { seedSampleData } from './database/seed'
 
 // Allow Web Audio API to play without requiring a user gesture per-context
@@ -205,7 +207,8 @@ protocol.registerSchemesAsPrivileged([
 app.whenReady().then(() => {
   // Handle local-file:// protocol to serve cover images and other local assets
   protocol.handle('local-file', (request) => {
-    const filePath = request.url.slice('local-file://'.length)
+    // URL comes in as local-file:///C:/path/to/file
+    const filePath = decodeURIComponent(request.url.slice('local-file://'.length))
     return net.fetch('file://' + filePath)
   })
 
@@ -214,6 +217,7 @@ app.whenReady().then(() => {
   registerSessionHandlers()
   registerFocusWallHandlers()
   registerCategoryHandlers()
+  registerTtsHandlers()
 
   // ─── Seed Data Handler (dev only) ──────────────────
   if (is.dev) {
@@ -433,6 +437,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('will-quit', () => {
+  getTtsService().destroy()
   getFocusWallManager().destroy()
   getSessionManager().destroy()
   closeDatabase()

@@ -238,6 +238,37 @@ export interface ManualTimeEntry {
   created_at: string
 }
 
+// ─── TTS (Text-to-Speech) ─────────────────────────
+
+export type TtsState = 'idle' | 'loading' | 'speaking' | 'paused'
+
+export interface TtsSnapshot {
+  state: TtsState
+  bookId: string | null
+  chapterHref: string | null
+  voiceId: string
+  rate: number
+  currentChunkIndex: number
+  totalChunks: number
+}
+
+export interface TtsVoice {
+  id: string
+  name: string
+  language: string
+  gender: 'female' | 'male'
+  installed: boolean
+}
+
+export interface TextChunk {
+  index: number
+  text: string
+  startOffset: number
+}
+
+export const TTS_RATES = [0.75, 1, 1.25, 1.5, 1.75, 2] as const
+export type TtsRate = (typeof TTS_RATES)[number]
+
 export const FONT_FAMILIES = [
   { label: 'Literata', value: 'Literata, Georgia, serif' },
   { label: 'Georgia', value: 'Georgia, serif' },
