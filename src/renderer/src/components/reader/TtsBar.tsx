@@ -18,8 +18,8 @@ export function TtsBar({ tts, visible, onClose }: TtsBarProps) {
   if (installed === false) {
     return (
       <div className="fixed bottom-14 right-4 z-50 w-80 bg-popover/95 backdrop-blur-xl rounded-xl shadow-lg border border-border px-4 py-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
-        {/* Install error */}
-        {error && !installing && (
+        {/* Install error — always visible, even while installing */}
+        {error && (
           <div className="mb-2 px-2 py-1.5 rounded bg-destructive/10 text-destructive text-xs">
             {error}
           </div>
@@ -78,6 +78,19 @@ export function TtsBar({ tts, visible, onClose }: TtsBarProps) {
 
   return (
     <div className="fixed bottom-14 right-4 z-50 bg-popover/95 backdrop-blur-xl rounded-xl shadow-lg border border-border px-3 py-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
+      {/* Model loading progress (first time after app start) */}
+      {isLoading && downloadProgress && downloadProgress.percent < 100 && (
+        <div className="mb-1.5">
+          <p className="text-xs text-muted-foreground mb-1">{downloadProgress.label || 'Cargando modelo...'}</p>
+          <div className="h-1 bg-border rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-300"
+              style={{ width: `${downloadProgress.percent}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       {/* Error toast */}
       {error && (
         <div className="mb-1.5 px-2 py-1 rounded bg-destructive/10 text-destructive text-xs">

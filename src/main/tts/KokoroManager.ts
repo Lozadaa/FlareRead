@@ -101,11 +101,22 @@ export class KokoroManager {
       } catch { /* ignore */ }
     }
 
-    this.broadcast('tts:download-progress', { percent: 0, label: 'Descargando modelo TTS...' })
+    this.broadcast('tts:download-progress', { percent: 0, label: 'Preparando instalación...' })
+
+    // Import kokoro-js first — fail fast if module is broken
+    let KokoroTTS: KokoroTTSInstance
+    try {
+      this.broadcast('tts:download-progress', { percent: 2, label: 'Cargando motor TTS...' })
+      const mod = await import('kokoro-js')
+      KokoroTTS = mod.KokoroTTS
+    } catch (importErr) {
+      const msg = importErr instanceof Error ? importErr.message : String(importErr)
+      console.error('Failed to import kokoro-js:', msg)
+      this.broadcast('tts:download-progress', { percent: 0, label: '' })
+      throw new Error(`No se pudo cargar el motor TTS: ${msg}`)
+    }
 
     const attemptInstall = async (label: string): Promise<void> => {
-      const { KokoroTTS } = await import('kokoro-js')
-
       this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
         dtype: 'q8',
         device: 'cpu',
@@ -113,8 +124,18 @@ export class KokoroManager {
         progress_callback: (progress: { status: string; progress?: number; file?: string }) => {
           if (progress.status === 'progress' && typeof progress.progress === 'number') {
             this.broadcast('tts:download-progress', {
-              percent: Math.round(progress.progress),
+              percent: Math.max(5, Math.round(progress.progress)),
               label
+            })
+          } else if (progress.status === 'initiate') {
+            this.broadcast('tts:download-progress', {
+              percent: 3,
+              label: `Descargando ${progress.file ? progress.file.split('/').pop() : ''}...`
+            })
+          } else if (progress.status === 'download') {
+            this.broadcast('tts:download-progress', {
+              percent: 5,
+              label: `Descargando ${progress.file ? progress.file.split('/').pop() : 'modelo'}...`
             })
           }
         }
@@ -157,21 +178,50 @@ export class KokoroManager {
 
     this.loadingPromise = (async () => {
       try {
-        this.broadcast('tts:download-progress', { percent: 0, label: 'Loading TTS model...' })
+        this.broadcast('tts:download-progress', { percent: 5, label: 'Cargando motor TTS...' })
 
-        const { KokoroTTS } = await import('kokoro-js')
+        let KokoroTTS: KokoroTTSInstance
+        try {
+          const mod = await import('kokoro-js')
+          KokoroTTS = mod.KokoroTTS
+        } catch (importErr) {
+          const msg = importErr instanceof Error ? importErr.message : String(importErr)
+          console.error('Failed to import kokoro-js:', msg)
+          this.broadcast('tts:error', {
+            message: `No se pudo cargar el motor TTS: ${msg}`,
+            code: 'IMPORT_ERROR'
+          })
+          throw new Error(`No se pudo cargar kokoro-js: ${msg}`)
+        }
+
+        this.broadcast('tts:download-progress', { percent: 15, label: 'Cargando modelo...' })
 
         this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
           dtype: 'q8',
           device: 'cpu',
-          cache_dir: this.modelDir
+          cache_dir: this.modelDir,
+          progress_callback: (progress: { status: string; progress?: number; file?: string }) => {
+            if (progress.status === 'progress' && typeof progress.progress === 'number') {
+              // Map 0-100 of file progress to 15-95 range for overall progress
+              const mapped = 15 + Math.round(progress.progress * 0.8)
+              this.broadcast('tts:download-progress', {
+                percent: mapped,
+                label: 'Cargando modelo...'
+              })
+            } else if (progress.status === 'initiate') {
+              this.broadcast('tts:download-progress', {
+                percent: 10,
+                label: `Preparando ${progress.file ? progress.file.split('/').pop() : 'archivos'}...`
+              })
+            }
+          }
         })
 
         if (!this.isInstalled()) {
           writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
         }
 
-        this.broadcast('tts:download-progress', { percent: 100, label: 'TTS ready!' })
+        this.broadcast('tts:download-progress', { percent: 100, label: 'TTS listo!' })
         return this.ttsInstance
       } catch (err) {
         // ENOTDIR or corrupted cache — wipe and retry once
@@ -183,7 +233,7 @@ export class KokoroManager {
             mkdirSync(this.modelDir, { recursive: true })
           } catch { /* ignore cleanup errors */ }
 
-          this.broadcast('tts:download-progress', { percent: 0, label: 'Re-downloading TTS model...' })
+          this.broadcast('tts:download-progress', { percent: 0, label: 'Re-descargando modelo TTS...' })
           const { KokoroTTS } = await import('kokoro-js')
 
           this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
@@ -194,16 +244,19 @@ export class KokoroManager {
               if (progress.status === 'progress' && typeof progress.progress === 'number') {
                 this.broadcast('tts:download-progress', {
                   percent: Math.round(progress.progress),
-                  label: 'Re-downloading TTS model...'
+                  label: 'Re-descargando modelo TTS...'
                 })
               }
             }
           })
 
           writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
-          this.broadcast('tts:download-progress', { percent: 100, label: 'TTS ready!' })
+          this.broadcast('tts:download-progress', { percent: 100, label: 'TTS listo!' })
           return this.ttsInstance
         }
+
+        // Broadcast the error so the renderer knows
+        this.broadcast('tts:download-progress', { percent: 0, label: '' })
         throw err
       } finally {
         this.loadingPromise = null

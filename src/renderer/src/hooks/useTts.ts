@@ -282,8 +282,11 @@ export function useTts(): UseTtsReturn {
     setVolumeState(v)
   }, [])
 
+  const installingRef = useRef(false)
+
   const installTts = useCallback(async () => {
-    if (installing) return // Prevent double-clicks
+    if (installingRef.current) return // Prevent double-clicks
+    installingRef.current = true
     setInstalling(true)
     setError(null)
     try {
@@ -302,9 +305,10 @@ export function useTts(): UseTtsReturn {
       setError(`Instalación falló: ${msg}`)
       // Don't auto-clear install errors — let user see them
     } finally {
+      installingRef.current = false
       setInstalling(false)
     }
-  }, [installing])
+  }, [])
 
   const downloadVoice = useCallback(async (voiceId: string) => {
     setError(null)
