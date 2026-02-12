@@ -1,6 +1,6 @@
 import { app, BrowserWindow } from 'electron'
 import { join } from 'path'
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs'
 
 export interface KokoroVoice {
   id: string
@@ -94,30 +94,59 @@ export class KokoroManager {
   async install(): Promise<void> {
     if (this.isInstalled() && this.ttsInstance) return
 
-    this.broadcast('tts:download-progress', { percent: 0, label: 'Downloading Kokoro TTS model...' })
+    // If marker exists but instance is null, the model may be corrupted — wipe marker
+    if (this.isInstalled() && !this.ttsInstance) {
+      try {
+        rmSync(join(this.modelDir, MARKER_FILE), { force: true })
+      } catch { /* ignore */ }
+    }
 
-    try {
+    this.broadcast('tts:download-progress', { percent: 0, label: 'Descargando modelo TTS...' })
+
+    const attemptInstall = async (label: string): Promise<void> => {
       const { KokoroTTS } = await import('kokoro-js')
 
       this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
         dtype: 'q8',
         device: 'cpu',
+        cache_dir: this.modelDir,
         progress_callback: (progress: { status: string; progress?: number; file?: string }) => {
           if (progress.status === 'progress' && typeof progress.progress === 'number') {
             this.broadcast('tts:download-progress', {
               percent: Math.round(progress.progress),
-              label: 'Downloading Kokoro TTS model...'
+              label
             })
           }
         }
       })
-
-      writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
-      this.broadcast('tts:download-progress', { percent: 100, label: 'Kokoro TTS ready!' })
-    } catch (err) {
-      this.ttsInstance = null
-      throw err
     }
+
+    try {
+      await attemptInstall('Descargando modelo TTS...')
+    } catch (err) {
+      // First attempt failed — wipe cache and retry once
+      const msg = err instanceof Error ? err.message : String(err)
+      console.warn('Kokoro install failed, wiping cache and retrying:', msg)
+      this.ttsInstance = null
+
+      try {
+        rmSync(this.modelDir, { recursive: true, force: true })
+        mkdirSync(this.modelDir, { recursive: true })
+      } catch { /* ignore cleanup errors */ }
+
+      this.broadcast('tts:download-progress', { percent: 0, label: 'Reintentando descarga...' })
+
+      try {
+        await attemptInstall('Reintentando descarga...')
+      } catch (retryErr) {
+        this.ttsInstance = null
+        this.broadcast('tts:download-progress', { percent: 0, label: '' })
+        throw retryErr
+      }
+    }
+
+    writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
+    this.broadcast('tts:download-progress', { percent: 100, label: 'Kokoro TTS listo!' })
   }
 
   async ensureLoaded(): Promise<KokoroTTSInstance> {
@@ -128,18 +157,54 @@ export class KokoroManager {
 
     this.loadingPromise = (async () => {
       try {
+        this.broadcast('tts:download-progress', { percent: 0, label: 'Loading TTS model...' })
+
         const { KokoroTTS } = await import('kokoro-js')
 
         this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
           dtype: 'q8',
-          device: 'cpu'
+          device: 'cpu',
+          cache_dir: this.modelDir
         })
 
         if (!this.isInstalled()) {
           writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
         }
 
+        this.broadcast('tts:download-progress', { percent: 100, label: 'TTS ready!' })
         return this.ttsInstance
+      } catch (err) {
+        // ENOTDIR or corrupted cache — wipe and retry once
+        const msg = err instanceof Error ? err.message : String(err)
+        if (msg.includes('ENOTDIR') || msg.includes('ENOENT') || msg.includes('corrupt')) {
+          console.warn('Kokoro cache corrupted, wiping and retrying...', msg)
+          try {
+            rmSync(this.modelDir, { recursive: true, force: true })
+            mkdirSync(this.modelDir, { recursive: true })
+          } catch { /* ignore cleanup errors */ }
+
+          this.broadcast('tts:download-progress', { percent: 0, label: 'Re-downloading TTS model...' })
+          const { KokoroTTS } = await import('kokoro-js')
+
+          this.ttsInstance = await KokoroTTS.from_pretrained(MODEL_ID, {
+            dtype: 'q8',
+            device: 'cpu',
+            cache_dir: this.modelDir,
+            progress_callback: (progress: { status: string; progress?: number }) => {
+              if (progress.status === 'progress' && typeof progress.progress === 'number') {
+                this.broadcast('tts:download-progress', {
+                  percent: Math.round(progress.progress),
+                  label: 'Re-downloading TTS model...'
+                })
+              }
+            }
+          })
+
+          writeFileSync(join(this.modelDir, MARKER_FILE), 'ok')
+          this.broadcast('tts:download-progress', { percent: 100, label: 'TTS ready!' })
+          return this.ttsInstance
+        }
+        throw err
       } finally {
         this.loadingPromise = null
       }

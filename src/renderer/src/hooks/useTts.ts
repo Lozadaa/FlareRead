@@ -93,10 +93,24 @@ export function useTts(): UseTtsReturn {
       setTimeout(() => setError(null), 3000)
     }
 
-    audio.play().catch((err) => {
-      console.error('TTS play() rejected:', err)
-      setError('Audio playback blocked — click play to retry')
-    })
+    const tryPlay = (): void => {
+      audio.play().catch(() => {
+        // Autoplay blocked — retry on next user click anywhere
+        const retryOnClick = (): void => {
+          if (audioRef.current === audio) {
+            audio.play().catch(() => {})
+          }
+          document.removeEventListener('click', retryOnClick)
+          document.removeEventListener('keydown', retryOnClick)
+        }
+        document.addEventListener('click', retryOnClick, { once: true })
+        document.addEventListener('keydown', retryOnClick, { once: true })
+        setError('Audio bloqueado — haz clic para continuar')
+        setTimeout(() => setError(null), 3000)
+      })
+    }
+
+    tryPlay()
   }, [])
 
   // Subscribe to IPC events
@@ -269,24 +283,28 @@ export function useTts(): UseTtsReturn {
   }, [])
 
   const installTts = useCallback(async () => {
+    if (installing) return // Prevent double-clicks
     setInstalling(true)
     setError(null)
     try {
       const result = await window.ttsApi.install() as { success: boolean; error?: string }
       if (!result?.success) {
-        throw new Error(result?.error || 'Unknown install error')
+        throw new Error(result?.error || 'Error desconocido')
       }
       setInstalled(true)
+      setError(null)
       // Refresh voices after install
       const v = await window.ttsApi.getVoices()
       setVoices(v as TtsVoice[])
     } catch (err) {
       setInstalled(false)
-      setError(`Installation failed: ${err instanceof Error ? err.message : err}`)
+      const msg = err instanceof Error ? err.message : String(err)
+      setError(`Instalación falló: ${msg}`)
+      // Don't auto-clear install errors — let user see them
     } finally {
       setInstalling(false)
     }
-  }, [])
+  }, [installing])
 
   const downloadVoice = useCallback(async (voiceId: string) => {
     setError(null)

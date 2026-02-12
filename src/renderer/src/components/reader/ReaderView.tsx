@@ -580,6 +580,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
   }, [isLoading, renditionRef])
 
   // Highlight current TTS chunk text in the epub iframe
+  const ttsState = tts.snapshot?.state ?? 'idle'
   useEffect(() => {
     const chunkText = tts.currentChunkText
     const rendition = renditionRef.current
@@ -589,6 +590,18 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
     try {
       contents = rendition.getContents() as Array<{ document: Document }>
     } catch {
+      return
+    }
+
+    // If TTS is idle, always clear all highlights and stop
+    if (ttsState === 'idle' || !chunkText) {
+      for (const content of contents) {
+        const doc = content.document
+        if (!doc?.body) continue
+        doc.querySelectorAll('.flareread-tts-active').forEach((el) => {
+          el.classList.remove('flareread-tts-active')
+        })
+      }
       return
     }
 
@@ -603,8 +616,6 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       doc.querySelectorAll('.flareread-tts-active').forEach((el) => {
         el.classList.remove('flareread-tts-active')
       })
-
-      if (!chunkText) continue
 
       // Inject CSS if not already present
       if (!doc.getElementById('flareread-tts-css')) {
@@ -645,7 +656,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
         }
       }
     }
-  }, [tts.currentChunkText, renditionRef])
+  }, [tts.currentChunkText, ttsState, renditionRef])
 
   // Handle highlighting (create or update)
   const handleHighlight = useCallback(

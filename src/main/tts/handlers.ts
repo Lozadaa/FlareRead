@@ -53,10 +53,15 @@ export function registerTtsHandlers(): void {
 
   ipcMain.handle('tts:install', async () => {
     try {
-      await tts.getKokoroManager().install()
+      // 5-minute timeout for model download
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Tiempo de espera agotado. Verifica tu conexión a internet.')), 5 * 60 * 1000)
+      )
+      await Promise.race([tts.getKokoroManager().install(), timeout])
       return { success: true }
     } catch (err) {
-      return { success: false, error: String(err) }
+      console.error('TTS install failed:', err)
+      return { success: false, error: err instanceof Error ? err.message : String(err) }
     }
   })
 

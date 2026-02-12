@@ -18,6 +18,12 @@ export function TtsBar({ tts, visible, onClose }: TtsBarProps) {
   if (installed === false) {
     return (
       <div className="fixed bottom-14 right-4 z-50 w-80 bg-popover/95 backdrop-blur-xl rounded-xl shadow-lg border border-border px-4 py-3 animate-in slide-in-from-bottom-2 fade-in duration-200">
+        {/* Install error */}
+        {error && !installing && (
+          <div className="mb-2 px-2 py-1.5 rounded bg-destructive/10 text-destructive text-xs">
+            {error}
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
             <SpeakerIcon size={16} className="text-primary" />
@@ -26,14 +32,16 @@ export function TtsBar({ tts, visible, onClose }: TtsBarProps) {
             <p className="text-sm font-medium">Lectura en voz alta</p>
             <p className="text-xs text-muted-foreground">
               {installing
-                ? downloadProgress?.label || 'Instalando...'
-                : 'Instala Kokoro TTS para leer en voz alta (offline)'}
+                ? downloadProgress?.label || 'Preparando instalación...'
+                : error
+                  ? 'Haz clic en reintentar para intentar de nuevo'
+                  : 'Instala Kokoro TTS para leer en voz alta (offline)'}
             </p>
-            {installing && downloadProgress && (
+            {installing && (
               <div className="mt-1.5 h-1 bg-border rounded-full overflow-hidden">
                 <div
                   className="h-full bg-primary rounded-full transition-all duration-300"
-                  style={{ width: `${downloadProgress.percent}%` }}
+                  style={{ width: `${downloadProgress?.percent ?? 0}%` }}
                 />
               </div>
             )}
@@ -41,9 +49,9 @@ export function TtsBar({ tts, visible, onClose }: TtsBarProps) {
           {!installing && (
             <button
               onClick={tts.install}
-              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+              className="px-3 py-1.5 rounded-lg text-xs font-medium bg-primary text-primary-foreground hover:bg-primary/90 transition-colors shrink-0"
             >
-              Instalar
+              {error ? 'Reintentar' : 'Instalar'}
             </button>
           )}
           <button
