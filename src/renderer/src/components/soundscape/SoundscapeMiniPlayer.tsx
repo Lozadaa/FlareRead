@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import {
   Volume2,
   Volume1,
@@ -15,7 +15,8 @@ import {
   TreePine,
   Save,
   Trash2,
-  Check
+  Check,
+  GripVertical
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { UseAmbientSoundsReturn } from '@/hooks/useAmbientSounds'
@@ -24,6 +25,8 @@ import type { SoundscapeId } from '@/lib/audioEngine'
 interface SoundscapeMiniPlayerProps {
   sounds: UseAmbientSoundsReturn
 }
+
+const STORAGE_KEY = 'flareread-soundscape-position'
 
 const SOUND_ICONS: Record<SoundscapeId, typeof CloudRain> = {
   rain: CloudRain,
@@ -47,6 +50,35 @@ const SOUND_BG_ACTIVE: Record<SoundscapeId, string> = {
   whitenoise: 'bg-slate-500/10 border-slate-500/30',
   fireplace: 'bg-orange-500/10 border-orange-500/30',
   forest: 'bg-emerald-500/10 border-emerald-500/30'
+}
+
+function loadPosition(): { x: number; y: number } | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw)
+      if (typeof parsed.x === 'number' && typeof parsed.y === 'number') {
+        return parsed
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null
+}
+
+function clampPosition(
+  x: number,
+  y: number,
+  elWidth: number,
+  elHeight: number
+): { x: number; y: number } {
+  const maxX = window.innerWidth - elWidth
+  const maxY = window.innerHeight - elHeight
+  return {
+    x: Math.max(0, Math.min(x, maxX)),
+    y: Math.max(0, Math.min(y, maxY))
+  }
 }
 
 export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX.Element {
@@ -78,6 +110,88 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
   const [newProfileName, setNewProfileName] = useState('')
   const profileInputRef = useRef<HTMLInputElement>(null)
 
+  // Drag state
+  const panelRef = useRef<HTMLDivElement>(null)
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const isDraggingRef = useRef(false)
+  const dragOffsetRef = useRef({ x: 0, y: 0 })
+
+  // Load saved position on mount
+  useEffect(() => {
+    const saved = loadPosition()
+    if (saved) {
+      setPosition(saved)
+    }
+  }, [])
+
+  // Re-clamp when panel expands/collapses (size changes)
+  useEffect(() => {
+    if (position && panelRef.current) {
+      const rect = panelRef.current.getBoundingClientRect()
+      const clamped = clampPosition(position.x, position.y, rect.width, rect.height)
+      if (clamped.x !== position.x || clamped.y !== position.y) {
+        setPosition(clamped)
+      }
+    }
+  }, [isExpanded]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    if (!isDraggingRef.current || !panelRef.current) return
+    const rect = panelRef.current.getBoundingClientRect()
+    const newX = e.clientX - dragOffsetRef.current.x
+    const newY = e.clientY - dragOffsetRef.current.y
+    const clamped = clampPosition(newX, newY, rect.width, rect.height)
+    setPosition(clamped)
+  }, [])
+
+  const handleMouseUp = useCallback(() => {
+    if (!isDraggingRef.current) return
+    isDraggingRef.current = false
+    document.body.style.userSelect = ''
+    // Save position
+    setPosition((prev) => {
+      if (prev) {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(prev))
+        } catch {
+          // ignore
+        }
+      }
+      return prev
+    })
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }, [handleMouseMove])
+
+  const handleDragStart = useCallback(
+    (e: React.MouseEvent) => {
+      if (!panelRef.current) return
+      e.preventDefault()
+      isDraggingRef.current = true
+      document.body.style.userSelect = 'none'
+      const rect = panelRef.current.getBoundingClientRect()
+      dragOffsetRef.current = {
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top
+      }
+      // If position wasn't set yet (using default CSS position), initialize from current rect
+      if (!position) {
+        setPosition({ x: rect.left, y: rect.top })
+      }
+      document.addEventListener('mousemove', handleMouseMove)
+      document.addEventListener('mouseup', handleMouseUp)
+    },
+    [position, handleMouseMove, handleMouseUp]
+  )
+
+  // Cleanup listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [handleMouseMove, handleMouseUp])
+
   useEffect(() => {
     if (savingProfile && profileInputRef.current) {
       profileInputRef.current.focus()
@@ -96,21 +210,37 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
 
   const MuteIcon = isMuted ? VolumeX : masterVolume < 0.5 ? Volume1 : Volume2
 
+  // When position is set, use absolute left/top; otherwise fall back to bottom-right via CSS
+  const positionStyle: React.CSSProperties = position
+    ? { left: position.x, top: position.y, right: 'auto', bottom: 'auto' }
+    : { right: 16, bottom: 16 }
+
   return (
     <div
+      ref={panelRef}
       className={cn(
-        'fixed bottom-4 right-4 z-40',
+        'fixed z-40',
         'bg-popover/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.2)]',
-        'transition-all duration-300 ease-out',
+        'transition-[width] duration-300 ease-out',
         isExpanded ? 'w-80' : 'w-auto'
       )}
+      style={positionStyle}
     >
       {/* Expanded Panel */}
       {isExpanded && (
         <div className="p-4 space-y-4 border-b border-border/40">
-          {/* Header */}
+          {/* Header with drag handle */}
           <div className="flex items-center justify-between">
-            <h3 className="text-ui-sm font-semibold text-foreground">Soundscapes</h3>
+            <div className="flex items-center gap-1.5">
+              <div
+                onMouseDown={handleDragStart}
+                className="cursor-grab active:cursor-grabbing p-0.5 -ml-1 text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                title="Drag to move"
+              >
+                <GripVertical className="h-4 w-4" />
+              </div>
+              <h3 className="text-ui-sm font-semibold text-foreground">Soundscapes</h3>
+            </div>
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setShowProfiles(!showProfiles)}
@@ -283,6 +413,15 @@ export function SoundscapeMiniPlayer({ sounds }: SoundscapeMiniPlayerProps): JSX
 
       {/* Collapsed mini-bar */}
       <div className="flex items-center gap-1 p-2">
+        {/* Drag handle for collapsed state */}
+        <div
+          onMouseDown={handleDragStart}
+          className="cursor-grab active:cursor-grabbing p-0.5 text-muted-foreground/30 hover:text-muted-foreground/60 transition-colors"
+          title="Drag to move"
+        >
+          <GripVertical className="h-3.5 w-3.5" />
+        </div>
+
         {/* Active sound indicators or idle speaker icon */}
         <div className="flex items-center gap-0.5 px-1">
           {hasActiveSounds ? (

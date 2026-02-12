@@ -912,7 +912,7 @@ export function ReaderView({ bookId, filePath, onBack }: ReaderViewProps) {
       </div>
 
       {/* Main Reader Area */}
-      <div className={`flex-1 relative ${settings.scrollMode ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+      <div className="flex-1 relative overflow-hidden">
         {/* Loading Overlay */}
         {isLoading && (
           <div className="absolute inset-0 bg-reading-bg z-20 flex items-center justify-center">
