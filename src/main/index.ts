@@ -32,8 +32,8 @@ function createWindow(): BrowserWindow {
   })
 
   mainWindow.on('ready-to-show', () => {
-    mainWindow.maximize()
     mainWindow.show()
+    mainWindow.maximize()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -423,9 +423,13 @@ app.whenReady().then(() => {
   })
 
   app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
+    const allWindows = BrowserWindow.getAllWindows()
+    if (allWindows.length === 0) {
       const win = createWindow()
       buildMenu(win)
+    } else {
+      // macOS: show existing window when dock icon is clicked
+      allWindows[0].show()
     }
   })
 })
