@@ -162,6 +162,23 @@ jobs:
             artifacts/linux-artifacts/*.AppImage \
             artifacts/linux-artifacts/*.deb \
             --title "FlareRead v${{ steps.version.outputs.VERSION }}" \
-            --generate-notes
+            --notes "$(cat <<'NOTES'
+          ## Installation
+
+          | Platform | File |
+          |----------|------|
+          | Windows | `.exe` |
+          | macOS (Apple Silicon) | `arm64.dmg` |
+          | macOS (Intel) | `x64.dmg` |
+          | Linux | `.AppImage` or `.deb` |
+
+          ### macOS users
+          The app is not code-signed. macOS may show "app is damaged" or "can't be opened". To fix this, open Terminal and run:
+          ```
+          xattr -cr /Applications/FlareRead.app
+          ```
+          Then open the app normally.
+          NOTES
+          )"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
