@@ -1,0 +1,32 @@
+{
+  "firestore": {
+    "rules": "app/firestore.rules"
+  },
+  "storage": {
+    "rules": "app/storage.rules"
+  },
+  "hosting": [
+    {
+      "target": "website",
+      "public": "website/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    },
+    {
+      "target": "app",
+      "public": "app/dist",
+      "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+      "rewrites": [
+        {
+          "source": "**",
+          "destination": "/index.html"
+        }
+      ]
+    }
+  ]
+}

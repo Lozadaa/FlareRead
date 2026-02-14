@@ -1,0 +1,313 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Deny all access by default ─────────────────────
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ─── User-scoped data ───────────────────────────────
+    // All user data lives under users/{uid}/...
+    // Only the authenticated owner can read/write their own data.
+    match /users/{uid} {
+
+      // ── Helpers ─────────────────────────────────────
+      function isOwner() {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      function incomingData() {
+        return request.resource.data;
+      }
+
+      function isString(val) {
+        return val is string;
+      }
+
+      function isStringOrNull(val) {
+        return val == null || val is string;
+      }
+
+      function isNumber(val) {
+        return val is number;
+      }
+
+      function isNumberOrNull(val) {
+        return val == null || val is number;
+      }
+
+      function isTimestamp(val) {
+        return val is timestamp;
+      }
+
+      function isTimestampOrNull(val) {
+        return val == null || val is timestamp;
+      }
+
+      function isBool(val) {
+        return val is bool;
+      }
+
+      // ─── Books ──────────────────────────────────────
+      match /books/{bookId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().title)
+          && isStringOrNull(incomingData().author)
+          && isStringOrNull(incomingData().coverStoragePath)
+          && isString(incomingData().epubStoragePath)
+          && isStringOrNull(incomingData().description)
+          && isStringOrNull(incomingData().language)
+          && isNumberOrNull(incomingData().totalWordsEstimate)
+          && isStringOrNull(incomingData().categoryId)
+          && (incomingData().readingMode == null
+              || incomingData().readingMode in ['study', 'leisure'])
+          && isStringOrNull(incomingData().fileHash)
+          && isStringOrNull(incomingData().fileName)
+          && isNumber(incomingData().percentComplete)
+          && incomingData().percentComplete >= 0
+          && incomingData().percentComplete <= 100
+          && isStringOrNull(incomingData().cfiPosition)
+          && isStringOrNull(incomingData().currentChapter)
+          && isTimestamp(incomingData().createdAt)
+          && isTimestamp(incomingData().updatedAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt)
+          // Enum validation
+          && (!('readingMode' in request.resource.data)
+              || incomingData().readingMode == null
+              || incomingData().readingMode in ['study', 'leisure'])
+          // Range validation
+          && (!('percentComplete' in request.resource.data)
+              || (isNumber(incomingData().percentComplete)
+                  && incomingData().percentComplete >= 0
+                  && incomingData().percentComplete <= 100));
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Sessions ─────────────────────────────────
+      match /sessions/{sessionId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().bookId)
+          && isTimestamp(incomingData().startTime)
+          && isTimestampOrNull(incomingData().endTime)
+          && isNumber(incomingData().activeMs)
+          && incomingData().activeMs >= 0
+          && isNumber(incomingData().pagesViewed)
+          && incomingData().pagesViewed >= 0
+          && isNumber(incomingData().wordsReadEstimate)
+          && incomingData().wordsReadEstimate >= 0
+          && isString(incomingData().sessionType)
+          && incomingData().status in ['active', 'completed', 'abandoned']
+          && isNumber(incomingData().pomodoroWorkMin)
+          && isNumber(incomingData().pomodoroBreakMin)
+          && isBool(incomingData().pomodoroEnabled)
+          && isNumber(incomingData().completedPomodoros)
+          && incomingData().completedPomodoros >= 0
+          && isNumber(incomingData().afkTimeoutMin)
+          && isNumber(incomingData().totalAfkMs)
+          && incomingData().totalAfkMs >= 0
+          && isNumber(incomingData().totalBreakMs)
+          && incomingData().totalBreakMs >= 0
+          && isNumber(incomingData().highlightsDuring)
+          && incomingData().highlightsDuring >= 0
+          && isNumber(incomingData().notesDuring)
+          && incomingData().notesDuring >= 0
+          && isTimestamp(incomingData().createdAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('bookId' in request.resource.data)
+              || incomingData().bookId == resource.data.bookId)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt)
+          // Enum validation
+          && (!('status' in request.resource.data)
+              || incomingData().status in ['active', 'completed', 'abandoned']);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Highlights ───────────────────────────────
+      match /highlights/{highlightId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().bookId)
+          && isString(incomingData().cfiRange)
+          && isString(incomingData().text)
+          && isString(incomingData().color)
+          && isStringOrNull(incomingData().chapter)
+          && isTimestamp(incomingData().createdAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('bookId' in request.resource.data)
+              || incomingData().bookId == resource.data.bookId)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Notes ────────────────────────────────────
+      match /notes/{noteId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isStringOrNull(incomingData().highlightId)
+          && isString(incomingData().bookId)
+          && isString(incomingData().content)
+          && incomingData().tags is list
+          && isTimestamp(incomingData().createdAt)
+          && isTimestamp(incomingData().updatedAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('bookId' in request.resource.data)
+              || incomingData().bookId == resource.data.bookId)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt)
+          // Type validation
+          && (!('tags' in request.resource.data)
+              || incomingData().tags is list);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Categories ───────────────────────────────
+      match /categories/{categoryId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().name)
+          && isStringOrNull(incomingData().color)
+          && isStringOrNull(incomingData().icon)
+          && isTimestamp(incomingData().createdAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Tracks (category learning tracks) ────────
+      match /tracks/{trackId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().categoryId)
+          && isNumberOrNull(incomingData().targetHoursTotal)
+          && isNumberOrNull(incomingData().weeklyTargetHours)
+          && isTimestampOrNull(incomingData().targetDeadline)
+          && isNumberOrNull(incomingData().manualBaseHours)
+          && isStringOrNull(incomingData().notes)
+          && isStringOrNull(incomingData().sourceLabel)
+          && isTimestamp(incomingData().createdAt)
+          && isTimestamp(incomingData().updatedAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('categoryId' in request.resource.data)
+              || incomingData().categoryId == resource.data.categoryId)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Manual Time Entries ──────────────────────
+      match /manualTimeEntries/{entryId} {
+        allow read: if isOwner();
+
+        allow create: if isOwner()
+          && incomingData().id is string
+          && isString(incomingData().categoryId)
+          && isNumber(incomingData().deltaMinutes)
+          && isTimestamp(incomingData().occurredAt)
+          && isStringOrNull(incomingData().note)
+          && isTimestamp(incomingData().createdAt);
+
+        allow update: if isOwner()
+          // Immutable fields
+          && (!('id' in request.resource.data)
+              || incomingData().id == resource.data.id)
+          && (!('createdAt' in request.resource.data)
+              || incomingData().createdAt == resource.data.createdAt);
+
+        allow delete: if isOwner();
+      }
+
+      // ─── Settings (single document per user) ──────
+      match /settings/{docId} {
+        allow read: if isOwner();
+
+        allow create, update: if isOwner()
+          // Appearance
+          && isNumber(incomingData().fontSize)
+          && incomingData().fontSize >= 8
+          && incomingData().fontSize <= 48
+          && isString(incomingData().fontFamily)
+          && isNumber(incomingData().lineHeight)
+          && incomingData().lineHeight >= 1.0
+          && incomingData().lineHeight <= 3.0
+          && isNumber(incomingData().margin)
+          && incomingData().margin >= 0
+          && isNumber(incomingData().contentWidth)
+          && incomingData().contentWidth >= 20
+          && incomingData().contentWidth <= 100
+          && incomingData().theme in ['light', 'dark', 'system']
+          // Reading
+          && incomingData().defaultFocusMode in ['study', 'leisure']
+          // Session
+          && incomingData().defaultSessionMode in ['pomodoro', 'free']
+          && isNumber(incomingData().workMin)
+          && incomingData().workMin > 0
+          && isNumber(incomingData().breakMin)
+          && incomingData().breakMin >= 0
+          && isNumber(incomingData().afkTimeoutMin)
+          && incomingData().afkTimeoutMin > 0
+          && isNumber(incomingData().microbreakIntervalMin)
+          && incomingData().microbreakIntervalMin > 0
+          // Soundscape
+          && isStringOrNull(incomingData().defaultSoundscape)
+          && isBool(incomingData().autoPauseOnAfk)
+          // Meta
+          && isTimestamp(incomingData().updatedAt)
+          && isBool(incomingData().onboardingComplete);
+
+        // Settings should never be deleted
+        allow delete: if false;
+      }
+    }
+  }
+}

@@ -40,5 +40,11 @@ agent-runs/
 # Claude Code settings
 .claude/
 
+# Firebase cache
+.firebase/
+
+# TypeScript build info
+*.tsbuildinfo
+
 # Temp files
 nul

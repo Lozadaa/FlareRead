@@ -18,7 +18,11 @@
     "package:linux": "npm run build && electron-builder --linux",
     "package:all": "npm run build && electron-builder --win --mac --linux",
     "release:win": "npm run package:win && gh release create v%npm_package_version% dist/*.exe dist/*.yml --title \"FlareRead v%npm_package_version%\" --generate-notes",
-    "release": "npm run package:all && gh release create v%npm_package_version% dist/*.* --title \"FlareRead v%npm_package_version%\" --generate-notes"
+    "release": "npm run package:all && gh release create v%npm_package_version% dist/*.* --title \"FlareRead v%npm_package_version%\" --generate-notes",
+    "deploy:app": "cd app && npm run build && cd .. && firebase deploy --only hosting:app --project bisionaryapp",
+    "deploy:website": "cd website && npx astro build && cd .. && firebase deploy --only hosting:website --project bisionaryapp",
+    "deploy:all": "cd app && npm run build && cd ../website && npx astro build && cd .. && firebase deploy --only hosting --project bisionaryapp",
+    "deploy:rules": "firebase deploy --only firestore --project bisionaryapp"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",

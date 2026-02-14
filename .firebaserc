@@ -1,0 +1,13 @@
+{
+  "projects": {
+    "default": "bisionaryapp"
+  },
+  "targets": {
+    "bisionaryapp": {
+      "hosting": {
+        "website": ["justread-ralv"],
+        "app": ["flareread-app"]
+      }
+    }
+  }
+}
