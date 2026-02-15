@@ -1,3 +1,4 @@
+import { useRef, useLayoutEffect, useState } from 'react'
 import { HIGHLIGHT_COLORS, type HighlightColor } from '@/types'
 
 interface HighlightToolbarProps {
@@ -7,13 +8,33 @@ interface HighlightToolbarProps {
 }
 
 export function HighlightToolbar({ position, onSelectColor, onDismiss }: HighlightToolbarProps) {
-  // Position the toolbar above the selection, centered
-  const toolbarWidth = 200
-  const toolbarHeight = 44
-  const gap = 8
+  const toolbarRef = useRef<HTMLDivElement>(null)
+  const [coords, setCoords] = useState<{ left: number; top: number } | null>(null)
 
-  const left = Math.max(8, Math.min(position.x - toolbarWidth / 2, window.innerWidth - toolbarWidth - 8))
-  const top = Math.max(8, position.y - toolbarHeight - gap)
+  // Measure the actual toolbar size and clamp to viewport after render
+  useLayoutEffect(() => {
+    const el = toolbarRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
+    const pad = 8
+    const w = rect.width
+    const h = rect.height
+    const gap = 8
+
+    let left = position.x - w / 2
+    let top = position.y - h - gap
+
+    // Clamp horizontally
+    left = Math.max(pad, Math.min(left, window.innerWidth - w - pad))
+    // If toolbar would go above viewport, flip below
+    if (top < pad) {
+      top = position.y + gap
+    }
+    // Clamp vertically
+    top = Math.max(pad, Math.min(top, window.innerHeight - h - pad))
+
+    setCoords({ left, top })
+  }, [position])
 
   return (
     <>
@@ -22,14 +43,15 @@ export function HighlightToolbar({ position, onSelectColor, onDismiss }: Highlig
 
       {/* Toolbar */}
       <div
-        className="fixed z-50 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-card border border-border shadow-lg animate-fade-in"
-        style={{ left, top }}
+        ref={toolbarRef}
+        className="fixed z-50 flex items-center gap-2 sm:gap-1.5 px-3 py-2 rounded-lg bg-card border border-border shadow-lg animate-fade-in"
+        style={coords ?? { left: position.x, top: position.y, visibility: 'hidden' as const }}
       >
         {HIGHLIGHT_COLORS.map((color) => (
           <button
             key={color.value}
             onClick={() => onSelectColor(color.value as HighlightColor)}
-            className="w-7 h-7 rounded-full border-2 border-transparent hover:border-foreground/40 transition-all hover:scale-110 focus:outline-none focus:border-foreground/60"
+            className="w-9 h-9 sm:w-7 sm:h-7 rounded-full border-2 border-transparent hover:border-foreground/40 transition-all hover:scale-110 focus:outline-none focus:border-foreground/60"
             style={{ backgroundColor: color.value }}
             title={`Highlight ${color.name}`}
           />
@@ -40,7 +62,7 @@ export function HighlightToolbar({ position, onSelectColor, onDismiss }: Highlig
         {/* Add note without highlight */}
         <button
           onClick={() => onSelectColor(HIGHLIGHT_COLORS[0].value as HighlightColor)}
-          className="w-7 h-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
           title="Highlight with default color"
         >
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

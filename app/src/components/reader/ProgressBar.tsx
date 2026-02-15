@@ -5,7 +5,7 @@ interface ProgressBarProps {
 
 export function ProgressBar({ percent, chapter }: ProgressBarProps) {
   return (
-    <div className="flex items-center gap-3 px-4 h-8 bg-card border-t border-border select-none">
+    <div className="flex items-center gap-3 px-4 h-10 sm:h-8 bg-card border-t border-border select-none">
       {/* Chapter name */}
       {chapter && (
         <span className="text-ui-xs font-body text-muted-foreground truncate max-w-[200px]">

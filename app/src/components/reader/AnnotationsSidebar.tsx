@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { HIGHLIGHT_COLORS, type HighlightDoc, type NoteDoc } from '@/types'
 
 interface AnnotationsSidebarProps {
@@ -49,6 +49,15 @@ export function AnnotationsSidebar({
     highlightsByChapter.get(chapter)!.push(h)
   }
 
+  // Prevent body scroll on mobile when sidebar is open
+  useEffect(() => {
+    const isMobile = window.innerWidth < 1024
+    if (isMobile) {
+      document.body.style.overflow = 'hidden'
+      return () => { document.body.style.overflow = '' }
+    }
+  }, [])
+
   const colorDot = (color: string) => {
     const name = HIGHLIGHT_COLORS.find((c) => c.value === color)?.name || 'Highlight'
     return (
@@ -61,14 +70,17 @@ export function AnnotationsSidebar({
   }
 
   return (
-    <div className="w-80 h-full bg-card border-l border-border flex flex-col animate-fade-in">
+    <>
+      {/* Mobile overlay backdrop */}
+      <div className="fixed inset-0 bg-black/40 z-40 lg:hidden" onClick={onClose} />
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 z-50 lg:relative lg:z-auto lg:w-80 h-full bg-card border-l border-border flex flex-col animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-border shrink-0">
         <h3 className="text-ui-sm font-body font-semibold text-foreground">Annotations</h3>
         <div className="flex items-center gap-1">
           <button
             onClick={onExport}
-            className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             title="Export to Markdown"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -77,7 +89,7 @@ export function AnnotationsSidebar({
           </button>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="w-9 h-9 sm:w-7 sm:h-7 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             title="Close"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -148,7 +160,7 @@ export function AnnotationsSidebar({
                               e.stopPropagation()
                               onDeleteHighlight(h.id)
                             }}
-                            className="w-5 h-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all shrink-0"
+                            className="w-7 h-7 sm:w-5 sm:h-5 flex items-center justify-center rounded opacity-60 sm:opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all shrink-0"
                             title="Delete highlight"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -251,7 +263,7 @@ export function AnnotationsSidebar({
                     </p>
                     <button
                       onClick={() => onDeleteNote(note.id)}
-                      className="w-5 h-5 flex items-center justify-center rounded opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all shrink-0"
+                      className="w-7 h-7 sm:w-5 sm:h-5 flex items-center justify-center rounded opacity-60 sm:opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all shrink-0"
                       title="Delete note"
                     >
                       <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -279,6 +291,9 @@ export function AnnotationsSidebar({
       <div className="px-4 py-2 border-t border-border text-ui-xs font-body text-muted-foreground shrink-0">
         {highlights.length} highlight{highlights.length !== 1 ? 's' : ''} · {notes.length} note{notes.length !== 1 ? 's' : ''}
       </div>
+      {/* Safe area padding for iOS */}
+      <div className="pb-[env(safe-area-inset-bottom)] lg:hidden" />
     </div>
+    </>
   )
 }

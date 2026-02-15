@@ -278,6 +278,53 @@ export function ReaderPage() {
     setTtsOpen(false)
   }, [tts, reader])
 
+  // Touch swipe navigation for paginated mode
+  useEffect(() => {
+    if (settings.viewMode !== 'paginated') return
+    const container = containerRef.current
+    if (!container) return
+
+    let startX = 0
+    let startY = 0
+    let tracking = false
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (e.touches.length !== 1) return
+      const t = e.touches[0]
+      if (!t) return
+      startX = t.clientX
+      startY = t.clientY
+      tracking = true
+    }
+
+    const onTouchEnd = (e: TouchEvent) => {
+      if (!tracking) return
+      tracking = false
+      const touch = e.changedTouches[0]
+      if (!touch) return
+      const dx = touch.clientX - startX
+      const dy = touch.clientY - startY
+      const absDx = Math.abs(dx)
+      const absDy = Math.abs(dy)
+
+      // Must be primarily horizontal and exceed 50px threshold
+      if (absDx > 50 && absDx > absDy * 1.5) {
+        if (dx < 0) {
+          reader.goNext()
+        } else {
+          reader.goPrev()
+        }
+      }
+    }
+
+    container.addEventListener('touchstart', onTouchStart, { passive: true })
+    container.addEventListener('touchend', onTouchEnd, { passive: true })
+    return () => {
+      container.removeEventListener('touchstart', onTouchStart)
+      container.removeEventListener('touchend', onTouchEnd)
+    }
+  }, [settings.viewMode, reader.goNext, reader.goPrev])
+
   // Keyboard navigation
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -366,12 +413,12 @@ export function ReaderPage() {
     <div className="h-screen flex flex-col bg-background overflow-hidden">
       {/* Top toolbar - hidden in focus mode */}
       {!focusMode && (
-        <header className="flex items-center justify-between px-3 h-12 bg-card border-b border-border shrink-0 animate-fade-in">
+        <header className="flex items-center justify-between px-2 sm:px-3 h-12 bg-card border-b border-border shrink-0 animate-fade-in">
           {/* Left: Back + TOC */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             <button
               onClick={() => navigate('/library')}
-              className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               title="Back to Library"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -379,12 +426,12 @@ export function ReaderPage() {
               </svg>
             </button>
 
-            <div className="w-px h-5 bg-border mx-1" />
+            <div className="w-px h-5 bg-border mx-0.5 sm:mx-1" />
 
             <button
               onClick={() => { setTocOpen(!tocOpen); setSettingsOpen(false) }}
               className={`
-                w-8 h-8 flex items-center justify-center rounded-md transition-colors
+                w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-colors
                 ${tocOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}
               `}
               title="Table of Contents"
@@ -421,12 +468,12 @@ export function ReaderPage() {
           </div>
 
           {/* Right: Session start + Annotations + Focus mode + Settings */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 sm:gap-1">
             {/* Start session button (only when no active session) */}
             {!session.active && (
               <button
                 onClick={() => setShowSessionDialog(true)}
-                className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+                className="w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
                 title="Start study session"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -443,7 +490,7 @@ export function ReaderPage() {
                 setSettingsOpen(false)
               }}
               className={`
-                w-8 h-8 flex items-center justify-center rounded-md transition-colors
+                w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-colors
                 ${annotationsOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}
               `}
               title="Annotations"
@@ -457,7 +504,7 @@ export function ReaderPage() {
             <button
               onClick={() => setTtsOpen(!ttsOpen)}
               className={`
-                w-8 h-8 flex items-center justify-center rounded-md transition-colors
+                w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-colors
                 ${ttsOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}
               `}
               title="Read aloud"
@@ -467,9 +514,10 @@ export function ReaderPage() {
               </svg>
             </button>
 
+            {/* Focus mode — hide on very small screens to save space */}
             <button
               onClick={() => setFocusMode(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+              className="hidden sm:flex w-10 h-10 sm:w-8 sm:h-8 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
               title="Focus mode (F)"
             >
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -477,13 +525,13 @@ export function ReaderPage() {
               </svg>
             </button>
 
-            <div className="w-px h-5 bg-border mx-1" />
+            <div className="w-px h-5 bg-border mx-0.5 sm:mx-1" />
 
             <div className="relative">
               <button
                 onClick={() => { setSettingsOpen(!settingsOpen); setTocOpen(false) }}
                 className={`
-                  w-8 h-8 flex items-center justify-center rounded-md transition-colors
+                  w-10 h-10 sm:w-8 sm:h-8 flex items-center justify-center rounded-md transition-colors
                   ${settingsOpen ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:text-foreground hover:bg-accent'}
                 `}
                 title="Reading Settings"
@@ -493,11 +541,19 @@ export function ReaderPage() {
                 </svg>
               </button>
 
-              {/* Settings dropdown */}
+              {/* Settings dropdown — mobile renders its own bottom sheet overlay */}
               {settingsOpen && (
                 <>
-                  <div className="fixed inset-0 z-40" onClick={() => setSettingsOpen(false)} />
-                  <div className="absolute right-0 top-10 z-50">
+                  <div className="hidden sm:block fixed inset-0 z-40" onClick={() => setSettingsOpen(false)} />
+                  <div className="hidden sm:block absolute right-0 top-10 z-50">
+                    <ReadingSettingsPanel
+                      settings={settings}
+                      onUpdate={updateSettings}
+                      onClose={() => setSettingsOpen(false)}
+                    />
+                  </div>
+                  {/* Mobile: rendered at root level by the component itself */}
+                  <div className="sm:hidden">
                     <ReadingSettingsPanel
                       settings={settings}
                       onUpdate={updateSettings}
@@ -552,12 +608,12 @@ export function ReaderPage() {
           {/* Epub render target */}
           <div ref={containerRef} className="w-full h-full" />
 
-          {/* Navigation arrows (paginated mode only) */}
+          {/* Navigation arrows (paginated mode only) — semi-transparent always on touch, hover-reveal on desktop */}
           {settings.viewMode === 'paginated' && !reader.loading && (
             <>
               <button
                 onClick={reader.goPrev}
-                className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-background/80 border border-border text-muted-foreground hover:text-foreground hover:bg-background transition-all opacity-0 hover:opacity-100 focus:opacity-100"
+                className="absolute left-2 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-background/80 border border-border text-muted-foreground hover:text-foreground hover:bg-background transition-all opacity-40 sm:opacity-0 sm:hover:opacity-100 sm:focus:opacity-100"
                 title="Previous page"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -566,7 +622,7 @@ export function ReaderPage() {
               </button>
               <button
                 onClick={reader.goNext}
-                className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-full bg-background/80 border border-border text-muted-foreground hover:text-foreground hover:bg-background transition-all opacity-0 hover:opacity-100 focus:opacity-100"
+                className="absolute right-2 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-background/80 border border-border text-muted-foreground hover:text-foreground hover:bg-background transition-all opacity-40 sm:opacity-0 sm:hover:opacity-100 sm:focus:opacity-100"
                 title="Next page"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -580,9 +636,10 @@ export function ReaderPage() {
           {focusMode && (
             <button
               onClick={() => setFocusMode(false)}
-              className="absolute top-3 right-3 px-3 py-1.5 rounded-full bg-background/60 border border-border text-ui-xs font-body text-muted-foreground hover:text-foreground hover:bg-background/90 transition-all opacity-0 hover:opacity-100 backdrop-blur-sm"
+              className="absolute top-3 right-3 px-3 py-2 sm:py-1.5 rounded-full bg-background/60 border border-border text-ui-xs font-body text-muted-foreground hover:text-foreground hover:bg-background/90 transition-all opacity-60 sm:opacity-0 sm:hover:opacity-100 backdrop-blur-sm"
             >
-              Press F or click to exit focus mode
+              <span className="hidden sm:inline">Press F or click to exit focus mode</span>
+              <span className="sm:hidden">Tap to exit focus mode</span>
             </button>
           )}
         </div>
